@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <title>ویرایش کاربر</title>
+     <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+     <div class="container">
+          <div class="card">
+               <div class="card-header">
+                    <h1>ویرایش کاربر</h1>
+               </div>
+               <form action="/ExamPlatform/admin/user/{{ id }}" method="POST">
+                    <input type="hidden" name="_method" value="PUT">
+                    <div class="form-group">
+                         <label>نام کامل</label>
+                         <input type="text" name="fullname" value="{{ fullname }}" required>
+                    </div>
+                    <div class="form-group">
+                         <label>ایمیل</label>
+                         <input type="email" name="email" value="{{ email }}" required>
+                    </div>
+                    <div class="form-group">
+                         <label>نقش</label>
+                         <select name="role">
+                         <option value="student" {{ 'selected' if role=='student' else '' }}>دانشجو</option>
+                         <option value="teacher" {{ 'selected' if role=='teacher' else '' }}>استاد</option>
+                         </select>
+                    </div>
+                    <div class="form-group">
+                         <label>شماره دانشجویی/پرسنلی</label>
+                         <input type="text" name="university_id" value="{{ university_id }}">
+                    </div>
+                    <button type="submit">ذخیره تغییرات</button>
+               </form>
+               <div class="note">
+                    <a href="/ExamPlatform/users">بازگشت به لیست کاربران</a>
+               </div>
+          </div>
+     </div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <title>ویرایش آزمون</title>
+     <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+     <div class="container">
+          <div class="card">
+               <div class="card-header">
+                    <h1>ویرایش آزمون</h1>
+               </div>
+               <form action="/ExamPlatform/admin/exam/{{ id }}" method="POST">
+                    <input type="hidden" name="_method" value="PUT">
+                    <div class="form-group">
+                         <label>عنوان</label>
+                         <input type="text" name="title" value="{{ title }}" required>
+                    </div>
+                    <div class="form-group">
+                         <label>توضیحات</label>
+                         <textarea name="description">{{ description }}</textarea>
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group">
+                         <label>تاریخ برگزاری</label>
+                         <input type="date" name="exam_date" value="{{ exam_date }}" required>
+                         </div>
+                         <div class="form-group">
+                         <label>زمان شروع</label>
+                         <input type="time" name="start_time" value="{{ start_time }}" required>
+                         </div>
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group">
+                         <label>مدت (دقیقه)</label>
+                         <input type="number" name="duration_min" value="{{ duration_min }}" required>
+                         </div>
+                         <div class="form-group">
+                         <label>تعداد سوالات</label>
+                         <input type="number" name="question_count" value="{{ question_count }}" required>
+                         </div>
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group">
+                         <label>نمره کل</label>
+                         <input type="number" step="0.5" name="total_score" value="{{ total_score }}" required>
+                         </div>
+                         <div class="form-group">
+                         <label>دسته‌بندی</label>
+                         <select name="category">
+                              <option value="ریاضی" {{ 'selected' if category=='ریاضی' else '' }}>ریاضی</option>
+                              <option value="فیزیک" {{ 'selected' if category=='فیزیک' else '' }}>فیزیک</option>
+                              <option value="شیمی" {{ 'selected' if category=='شیمی' else '' }}>شیمی</option>
+                              <option value="برنامه‌نویسی" {{ 'selected' if category=='برنامه‌نویسی' else '' }}>برنامه‌نویسی</option>
+                              <option value="زبان" {{ 'selected' if category=='زبان' else '' }}>زبان</option>
+                              <option value="عمومی" {{ 'selected' if category=='عمومی' else '' }}>عمومی</option>
+                         </select>
+                         </div>
+                    </div>
+                    <div class="form-group">
+                         <label>وضعیت</label>
+                         <select name="status">
+                         <option value="پیش‌نویس" {{ 'selected' if status=='پیش‌نویس' else '' }}>پیش‌نویس</option>
+                         <option value="فعال" {{ 'selected' if status=='فعال' else '' }}>فعال</option>
+                         </select>
+                    </div>
+                    <button type="submit">ذخیره تغییرات</button>
+               </form>
+               <div class="note">
+                    <a href="/ExamPlatform/exams">بازگشت به لیست آزمون‌ها</a>
+               </div>
+          </div>
+     </div>
+</body>
+</html>

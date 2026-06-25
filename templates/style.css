@@ -1,0 +1,195 @@
+* {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+}
+
+body {
+     background: linear-gradient(145deg, #e9f0f5 0%, #d9e2ec 100%);
+     min-height: 100vh;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     padding: 20px;
+}
+
+@font-face {
+     font-family: "Yekan";
+     src: url(./BYekan+.ttf);
+}
+
+:lang(fa) {
+     direction: rtl;
+     text-align: right;
+     font-family: "Yekan";
+}
+
+:lang(en) {
+     direction: ltr;
+     text-align: left;
+     font-family: 'Tahoma', 'Arial', sans-serif;
+}
+
+.container {
+     width: 100%;
+     max-width: 700px;
+}
+
+.card {
+     background: #ffffff;
+     border-radius: 32px;
+     box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+     overflow: hidden;
+     transition: transform 0.2s;
+     border-top: 6px solid #10b981;
+}
+
+.card:hover {
+     transform: translateY(-4px);
+}
+
+.card-header {
+     background: #f8fafc;
+     padding: 28px 30px 20px;
+     text-align: center;
+     border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header {
+     font-size: 48px;
+     display: block;
+     margin-bottom: 8px;
+}
+
+.card-header h1 {
+     font-size: 28px;
+     color: #0f172a;
+     margin-bottom: 6px;
+}
+
+.card-header p {
+     color: #475569;
+     font-size: 14px;
+}
+
+form {
+     padding: 30px;
+}
+
+.form-group {
+     margin-bottom: 20px;
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+}
+
+.form-row {
+     display: flex;
+     gap: 15px;
+     flex-wrap: wrap;
+}
+.form-row .form-group {
+     flex: 1;
+     min-width: 150px;
+}
+
+label {
+     font-weight: 600;
+     font-size: 14px;
+     color: #1e293b;
+}
+
+.required {
+     color: #dc2626;
+     margin-left: 4px;
+}
+
+input, select, textarea {
+     padding: 12px 16px;
+     border: 1px solid #cbd5e1;
+     border-radius: 24px;
+     font-family: inherit;
+     font-size: 14px;
+     transition: 0.2s;
+     background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+     outline: none;
+     border-color: #10b981;
+     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.radio-group {
+     display: flex;
+     gap: 28px;
+     align-items: center;
+     background: #f8fafc;
+     padding: 12px 16px;
+     border-radius: 32px;
+}
+
+.radio-label {
+     font-weight: normal;
+     display: flex;
+     align-items: center;
+     gap: 8px;
+     cursor: pointer;
+}
+
+button {
+     width: 100%;
+     background: #10b981;
+     color: white;
+     padding: 12px;
+     border: none;
+     border-radius: 40px;
+     font-size: 16px;
+     font-weight: bold;
+     cursor: pointer;
+     transition: 0.2s;
+     margin-top: 8px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 8px;
+}
+
+button:hover {
+     background: #059669;
+     transform: scale(0.98);
+}
+
+.note {
+     background: #f1f5f9;
+     padding: 12px 30px;
+     font-size: 12px;
+     color: #475569;
+     text-align: center;
+     border-top: 1px solid #e2e8f0;
+}
+
+.message-item, .user-item, .exam-item {
+     background: #f9f9f9;
+     border-radius: 16px;
+     padding: 15px;
+     margin-bottom: 15px;
+     border-right: 4px solid #10b981;
+     transition: 0.2s;
+}
+
+.message-item:hover, .user-item:hover, .exam-item:hover {
+     transform: translateX(-4px);
+     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+hr {
+     margin-top: 12px;
+     border-color: #e2e8f0;
+}
+
+@media (max-width: 550px) {
+     form {
+          padding: 20px;
+     }
+}
