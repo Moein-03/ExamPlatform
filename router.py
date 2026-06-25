@@ -98,10 +98,18 @@ def route(path, method, body=""):
                result = user_update.handle(item_id, body)
                return (result or "ویرایش کاربر با موفقیت", 200, {"Content-Type": "text/html"})
 
+          #case ("/exams", "GET"):
+          #     exams = exam_show.handle()
+          #     rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
+          #     html = render_template("show_exams.htm", {"exams_content": rows})
+          #     return serve_html(html)
+
           case ("/exams", "GET"):
-               exams = exam_show.handle()
-               rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
-               html = render_template("show_exams.htm", {"exams_content": rows})
+               exams = exam_with_teacher.handle()
+               rows = ""
+               for exam in exams:
+                    rows += render_template("partials/exam_row_with_teacher.htm", exam)
+               html = render_template("show_exams_with_teacher.htm", {"exams_content": rows})
                return serve_html(html)
 
           case ("/users", "GET"):
