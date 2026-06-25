@@ -3,26 +3,23 @@ import os
 import settings
 
 def setup_database():
-    if not os.path.exists(settings.DB_NAME):
-
+    if not os.path.exists(settings.DB_PATH):
         print(f"[*] ساخت دیتابیس: {settings.DB_NAME}")
-        conn = sqlite3.connect(settings.DB_NAME)
+        conn = sqlite3.connect(settings.DB_PATH)
         cursor = conn.cursor()
 
-        # جدول کاربران
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS TBL_users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 fullname TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                role TEXT CHECK(role IN ('student', 'teacher')) NOT NULL,
+                role TEXT CHECK(role IN ('student', 'teacher', 'admin')) NOT NULL,
                 university_id TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
 
-        # جدول پیام‌های تماس با ما
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS TBL_messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +31,6 @@ def setup_database():
             )
         ''')
 
-        # جدول آزمون‌ها (جایگزین products)
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS TBL_exams (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,21 +43,23 @@ def setup_database():
                 total_score REAL NOT NULL,
                 category TEXT,
                 status TEXT DEFAULT 'پیش‌نویس',
-                question_selection_type TEXT DEFAULT 'manual',   -- manual / random
+                question_selection_type TEXT DEFAULT 'manual',
                 allow_download BOOLEAN DEFAULT 0,
                 detailed_feedback BOOLEAN DEFAULT 1,
-                created_by INTEGER,    -- آی دی استاد از جدول users
+                created_by INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (created_by) REFERENCES users(id)
+                FOREIGN KEY (created_by) REFERENCES TBL_users(id)
             )
         ''')
 
+        # Insert admin sample
+        cursor.execute("INSERT OR IGNORE INTO TBL_users (fullname, email, password, role) VALUES ('Admin', 'admin@example.com', '1234', 'admin')")
+
         conn.commit()
         conn.close()
-        print("[+] دیتابیس و جداول users, messages, exams با موفقیت ساخته شد.")
-
+        print("[+] دیتابیس ساخته شد.")
     else:
-        print(f"[!] دیتابیس {settings.DB_NAME} از قبل وجود دارد.")
+        print("[!] دیتابیس وجود دارد.")
 
 if __name__ == '__main__':
     setup_database()

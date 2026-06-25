@@ -1,36 +1,34 @@
+# controllers/user_add.py
 import sqlite3
-import os
-
 import settings
 
-def handle():
+def handle(data):
     if not settings.DB_PATH.exists():
-        print(f"فایل دیتابیس در مسیر {settings.DB_PATH} یافت نشد. ابتدا db_setup.py را اجرا کنید.")
-        return
+        return "دیتابیس یافت نشد."
 
     conn = sqlite3.connect(str(settings.DB_PATH))
     cursor = conn.cursor()
 
     try:
-        # درج در جدول کاربران
-        user_data = ('رضا کریمی', 'reza.karimi@example.com', '123456', 'student', '98231001')
-        
+        fullname = data.get('fullname', [''])[0].strip()
+        email = data.get('email', [''])[0].strip()
+        password = data.get('password', [''])[0].strip()
+        role = data.get('role', ['student'])[0]
+        university_id = data.get('university_id', [''])[0].strip()
+
+        if not fullname or not email or not password:
+            return "نام، ایمیل و رمز عبور الزامی است."
+
         sql = '''
             INSERT INTO TBL_users (fullname, email, password, role, university_id)
             VALUES (?, ?, ?, ?, ?)
         '''
-        cursor.execute(sql, user_data)
+        cursor.execute(sql, (fullname, email, password, role, university_id))
         conn.commit()
-        print("کاربر با موفقیت درج شد.")
-
-    except sqlite3.IntegrityError as e:
-        print(f"خطا: ایمیل تکراری یا مشکل یکپارچگی داده - {e}")
-
+        return "کاربر با موفقیت ثبت شد."
+    except sqlite3.IntegrityError:
+        return "این ایمیل قبلاً ثبت شده است."
     except Exception as e:
-        print(f"خطای غیرمنتظره: {e}")
-
+        return f"خطا: {str(e)}"
     finally:
         conn.close()
-
-if __name__ == '__main__':
-    handle()
