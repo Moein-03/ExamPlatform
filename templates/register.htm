@@ -3,53 +3,46 @@
 <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>ثبت نام | ورود</title>
-     <link rel="stylesheet" href="./style.css">
+     <title>ثبت‌نام کاربر</title>
+     <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
      <div class="container">
           <div class="card">
                <div class="card-header">
-                    <h1>ایجاد حساب کاربری</h1>
-                    <p>نوع کاربری خود را انتخاب کنید: دانشجو یا استاد</p>
+                    <h1>ثبت‌ نام جدید</h1>
+                    <p>اطلاعات خود را وارد کنید</p>
                </div>
-               <form action="http://127.0.0.1:8000/ExamPlatform/" method="POST">
+               <form action="{{ base_path }}/register" method="POST">
                     <div class="form-group">
-                         <label><span class="required">*</span> نام و نام خانوادگی</label>
-                         <input type="text" name="fullname" placeholder="مثال: معین خسروی" required>
+                         <label><span class="required">*</span> نام کامل</label>
+                         <input type="text" name="fullname" placeholder="مثال: علی محمدی" required>
                     </div>
                     <div class="form-group">
-                         <label><span class="required">*</span> آدرس ایمیل</label>
-                         <input type="email" name="email" placeholder="example@domain.com" required>
+                         <label><span class="required">*</span> ایمیل</label>
+                         <input type="email" name="email" placeholder="example@email.com" required>
                     </div>
-                    <div class="form-row">
-                         <div class="form-group">
+                    <div class="form-group">
                          <label><span class="required">*</span> رمز عبور</label>
                          <input type="password" name="password" placeholder="حداقل ۶ کاراکتر" required>
-                         </div>
-                         <div class="form-group">
-                         <label><span class="required">*</span> تکرار رمز عبور</label>
-                         <input type="password" name="password_confirm" placeholder="دوباره وارد کنید" required>
-                         </div>
                     </div>
                     <div class="form-group">
-                         <label><span class="required">*</span> نقش کاربر</label>
-                         <div class="radio-group">
-                         <label class="radio-label">
-                              <input type="radio" name="role" value="student" checked>دانشجو
-                         </label>
-                         <label class="radio-label">
-                              <input type="radio" name="role" value="teacher">استاد
-                         </label>
-                         </div>
+                         <label>نقش</label>
+                         <select name="role">
+                         <option value="student">دانشجو</option>
+                         <option value="teacher">استاد</option>
+                         <option value="admin">مدیر</option>
+                         </select>
                     </div>
                     <div class="form-group">
-                         <label><span class="required">*</span> شماره دانشجویی / کد پرسنلی استاد</label>
-                         <input type="text" name="university_id" placeholder="شماره دانشجویی / کد پرسنلی خود را وارد کنید">
+                         <label>شماره دانشجویی/پرسنلی</label>
+                         <input type="text" name="university_id" placeholder="اختیاری">
                     </div>
-                    <button type="submit">ثبت نام و ورود به سامانه</button>
+                    <button type="submit">ثبت‌نام</button>
                </form>
-               <div class="note">پس از ثبت نام، بر اساس نقش خود به امکانات متفاوتی دسترسی خواهید داشت.</div>
+               <div class="note">
+                    <a href="{{ base_path }}/">بازگشت به صفحه اصلی</a>
+               </div>
           </div>
      </div>
 </body>

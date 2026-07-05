@@ -2,33 +2,38 @@
 <html lang="fa" dir="rtl">
 <head>
      <meta charset="UTF-8">
-     <title>لیست آزمون‌ها - با نام استاد</title>
-     <style>
-          body {font-family: Tahoma; padding: 20px;}
-          table {width: 100%; border-collapse: collapse;}
-          th, td {padding: 10px; border: 1px solid #ccc; text-align: right;}
-          th {background: #2c3e50; color: white;}
-    </style>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>مدیریت آزمون‌ها (استاد)</title>
+     <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
-     <h1>لیست تمام آزمون‌ها (JOIN با استاد)</h1>
-     
-     <table>
-          <thead>
-               <tr>
-                    <th>عنوان</th>
-                    <th>استاد</th>
-                    <th>تاریخ برگزاری</th>
-                    <th>مدت زمان</th>
-                    <th>نمره کامل</th>
-                    <th>وضعیت</th>
-               </tr>
-          </thead>
-          <tbody>
-               {{exams_content}}
-          </tbody>
-     </table>
-     
-     <a href="/ExamPlatform">بازگشت</a>
+     <div class="container">
+          <div class="card">
+               <div class="card-header">
+                    <h1>📋 مدیریت آزمون‌ها</h1>
+                    <p>لیست تمام آزمون‌های ایجاد شده (مخصوص اساتید)</p>
+               </div>
+               <div class="table-responsive">
+                    <table>
+                         <thead>
+                         <tr>
+                              <th>عنوان</th>
+                              <th>توضیحات</th>
+                              <th>زمان شروع</th>
+                              <th>مدت (دقیقه)</th>
+                              <th>عملیات</th>
+                         </tr>
+                         </thead>
+                         <tbody>
+                         {{ rows }}
+                         </tbody>
+                    </table>
+               </div>
+               <div class="note">
+                    <a href="{{ base_path }}/teacher/exam">ثبت آزمون جدید</a> |
+                    <a href="{{ base_path }}/">بازگشت به صفحه اصلی</a>
+               </div>
+          </div>
+     </div>
 </body>
 </html>

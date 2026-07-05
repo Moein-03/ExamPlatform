@@ -2,40 +2,48 @@
 <html lang="fa" dir="rtl">
 <head>
      <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <title>ویرایش کاربر</title>
-     <link rel="stylesheet" href="./style.css">
+     <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
      <div class="container">
           <div class="card">
                <div class="card-header">
                     <h1>ویرایش کاربر</h1>
+                    <p>اطلاعات کاربر را به‌روز کنید</p>
                </div>
-               <form action="/ExamPlatform/admin/user/{{ id }}" method="POST">
+               <form action="{{ base_path }}/admin/user/{{ id }}" method="POST">
                     <input type="hidden" name="_method" value="PUT">
+                    
                     <div class="form-group">
-                         <label>نام کامل</label>
+                         <label><span class="required">*</span> نام کامل</label>
                          <input type="text" name="fullname" value="{{ fullname }}" required>
                     </div>
                     <div class="form-group">
-                         <label>ایمیل</label>
+                         <label><span class="required">*</span> ایمیل</label>
                          <input type="email" name="email" value="{{ email }}" required>
                     </div>
                     <div class="form-group">
                          <label>نقش</label>
                          <select name="role">
-                         <option value="student" {{ 'selected' if role=='student' else '' }}>دانشجو</option>
-                         <option value="teacher" {{ 'selected' if role=='teacher' else '' }}>استاد</option>
+                         <option value="student" {% if role == 'student' %}selected{% endif %}>دانشجو</option>
+                         <option value="teacher" {% if role == 'teacher' %}selected{% endif %}>استاد</option>
+                         <option value="admin" {% if role == 'admin' %}selected{% endif %}>مدیر</option>
                          </select>
                     </div>
                     <div class="form-group">
-                         <label>شماره دانشجویی/پرسنلی</label>
+                         <label>شماره دانشگاهی</label>
                          <input type="text" name="university_id" value="{{ university_id }}">
+                    </div>
+                    <div class="form-group">
+                         <label>رمز عبور جدید (اختیاری)</label>
+                         <input type="password" name="password" placeholder="در صورت تمایل رمز جدید وارد کنید">
                     </div>
                     <button type="submit">ذخیره تغییرات</button>
                </form>
                <div class="note">
-                    <a href="/ExamPlatform/users">بازگشت به لیست کاربران</a>
+                    <a href="{{ base_path }}/users">بازگشت به لیست کاربران</a>
                </div>
           </div>
      </div>

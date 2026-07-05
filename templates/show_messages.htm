@@ -3,22 +3,34 @@
 <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>لیست پیام‌ها</title>
-     <link rel="stylesheet" href="./style.css">
+     <title>پیام‌های دریافتی</title>
+     <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
      <div class="container">
           <div class="card">
                <div class="card-header">
-                    <h1>لیست پیام‌های دریافتی</h1>
-                    <p>تمام پیام‌های ارسال شده از طریق فرم تماس با ما</p>
+                    <h1>پیام‌های دریافتی</h1>
+                    <p>پیام‌های ارسال شده از طریق فرم تماس</p>
                </div>
-               <div class="form-group">
-                    <!-- در جلسه بعدی داده‌های دیتابیس در این قسمت نمایش داده می‌شود -->
-                    <p style="text-align: center; color: #666;">داده‌های جدول پیام‌ها به زودی در اینجا قرار می‌گیرد.</p>
+               <div class="table-responsive">
+                    <table>
+                         <thead>
+                         <tr>
+                              <th>فرستنده</th>
+                              <th>ایمیل</th>
+                              <th>موضوع</th>
+                              <th>متن پیام</th>
+                              <th>تاریخ ارسال</th>
+                         </tr>
+                         </thead>
+                         <tbody>
+                         {{ rows }}
+                         </tbody>
+                    </table>
                </div>
                <div class="note">
-                    <a href="/ExamPlatform/">بازگشت به صفحه اصلی</a>
+                    <a href="{{ base_path }}/">بازگشت به صفحه اصلی</a>
                </div>
           </div>
      </div>

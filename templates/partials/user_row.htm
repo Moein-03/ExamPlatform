@@ -1,6 +1,10 @@
-<div class="user-item">
-     <h3>{{ fullname }} ({{ role }})</h3>
-     <p>ایمیل: {{ email }} | شماره دانشجویی: {{ university_id if university_id else '-' }}</p>
-     <p>عضو از: {{ created_at }}</p>
-     <hr>
-</div>
+<tr>
+     <td>{{ fullname }}</td>
+     <td>{{ email }}</td>
+     <td>{{ role }}</td>
+     <td>{{ university_id }}</td>
+     <td>{{ created_at }}</td>
+     <td>
+          <a href="{{ base_path }}/admin/user/{{ id }}">ویرایش</a>
+     </td>
+</tr>

@@ -6,10 +6,10 @@ import mimetypes
 import settings
 import db_setup
 from controllers import (
-     message_add, user_add, exam_add,
-     user_show, message_show, exam_show,
-     user_get_one, user_update,
-     exam_get_one, exam_update
+    message_add, user_add, exam_add,
+    user_show, message_show, exam_show,
+    user_get_one, user_update,
+    exam_get_one, exam_update
 )
 
 def render_template(filename, context=None):
@@ -58,14 +58,6 @@ def _500():
      return (html, 500, {"Content-Type": "text/html; charset=utf-8"})
 
 def route(path, method, body=None):
-     """
-          ورودی‌ها:
-               path: مسیر درخواستی (بدون نام پروژه) مثل '/exams'
-               method: 'GET' یا 'POST'
-               body: می‌تواند رشته خام یا دیکشنری (از web_server) باشد
-          خروجی: (response_body, status_code, headers)
-     """
-
      if isinstance(body, str):
           data = parse_qs(body) if body else {}
      elif isinstance(body, dict):
@@ -134,10 +126,6 @@ def route(path, method, body=None):
                return (result or "ویرایش کاربر با موفقیت", 200, {"Content-Type": "text/html"})
 
           case ("/exams", "GET"):
-               #exams = exam_show.handle()
-               #rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
-               #html = render_template("show_exams.htm", {"rows": rows})
-               #return serve_html(html)
                exams = exam_show.handle()
                if not exams:
                     rows = "<tr><td colspan='5' style='text-align:center;'>هیچ آزمونی ثبت نشده است.</td></tr>"
@@ -148,13 +136,19 @@ def route(path, method, body=None):
 
           case ("/users", "GET"):
                users = user_show.handle()
-               rows = ''.join(render_template("partials/user_row.htm", user) for user in users)
+               if not users:
+                    rows = "<tr><td colspan='6' style='text-align:center;'>هیچ کاربری ثبت نشده است.</td></tr>"
+               else:
+                    rows = ''.join(render_template("partials/user_row.htm", user) for user in users)
                html = render_template("show_users.htm", {"rows": rows})
                return serve_html(html)
 
           case ("/messages", "GET"):
                messages = message_show.handle()
-               rows = ''.join(render_template("partials/message_row.htm", msg) for msg in messages)
+               if not messages:
+                    rows = "<tr><td colspan='5' style='text-align:center;'>هیچ پیامی دریافت نشده است.</td></tr>"
+               else:
+                    rows = ''.join(render_template("partials/message_row.htm", msg) for msg in messages)
                html = render_template("show_messages.htm", {"rows": rows})
                return serve_html(html)
 
