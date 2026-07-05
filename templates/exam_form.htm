@@ -4,7 +4,7 @@
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <title>ایجاد آزمون جدید</title>
-     <link rel="stylesheet" href="./style.css">
+     <link rel="stylesheet" href="{{ base_path }}/static/style.css">
 </head>
 <body>
      <div class="container">
@@ -13,65 +13,30 @@
                     <h1>ایجاد آزمون جدید</h1>
                     <p>استاد گرامی، مشخصات آزمون را وارد کنید</p>
                </div>
-               <form action="http://127.0.0.1:8000/ExamPlatform/" method="POST">
+               <form action="{{ base_path }}/teacher/exam" method="POST">
                     <div class="form-group">
                          <label><span class="required">*</span> عنوان آزمون</label>
-                         <input type="text" name="exam_title" placeholder="مثال: ریاضی پایه - فصل دوم" required>
+                         <input type="text" name="title" placeholder="مثال: ریاضی پایه - فصل دوم" required>
                     </div>
                     <div class="form-group">
                          <label>توضیحات (هدف، سطح دشواری و ...)</label>
                          <textarea name="description" rows="3" placeholder="توضیحات تکمیلی..."></textarea>
                     </div>
                     <div class="form-row">
-                         <!-- <div class="form-group">
-                         <label><span class="required">*</span> تاریخ برگزاری</label>
-                         <input type="date" name="exam_date" required>
-                         </div>
                          <div class="form-group">
-                         <label><span class="required">*</span> زمان شروع</label>
-                         <input type="time" name="start_time" required>
-                         </div> -->
-                         <div class="form-group">
+                              <label>تاریخ و زمان شروع</label>
                               <input type="datetime-local" name="start_time">
                          </div>
                     </div>
                     <div class="form-row">
                          <div class="form-group">
-                         <label><span class="required">*</span> مدت زمان (دقیقه)</label>
-                         <input type="number" name="duration_min" min="1" placeholder="مثلاً 90" required>
+                              <label><span class="required">*</span> مدت زمان (دقیقه)</label>
+                              <input type="number" name="duration" min="1" placeholder="مثلاً 90" required>
                          </div>
-                         <div class="form-group">
-                         <label><span class="required">*</span> تعداد سوالات</label>
-                         <input type="number" name="question_count" min="1" placeholder="مثلاً 20" required>
-                         </div>
-                    </div>
-                    <div class="form-row">
-                         <div class="form-group">
-                         <label><span class="required">*</span> نمره کل</label>
-                         <input type="number" step="0.5" name="total_score" placeholder="مثلاً 100" required>
-                         </div>
-                         <div class="form-group">
-                         <label>دسته‌بندی درس</label>
-                         <select name="category">
-                              <option value="ریاضی">ریاضیات</option>
-                              <option value="فیزیک">فیزیک</option>
-                              <option value="شیمی">شیمی</option>
-                              <option value="برنامه‌نویسی">برنامه‌نویسی</option>
-                              <option value="زبان">زبان انگلیسی</option>
-                              <option value="عمومی">عمومی</option>
-                         </select>
-                         </div>
-                    </div>
-                    <div class="form-group">
-                         <label>وضعیت نمایش</label>
-                         <select name="status">
-                         <option value="پیش‌نویس">پیش‌نویس (قابل ویرایش)</option>
-                         <option value="فعال" selected>فعال – دانشجویان می‌توانند شرکت کنند</option>
-                         </select>
                     </div>
                     <button type="submit">ذخیره آزمون در دیتابیس</button>
                </form>
-               <div class="note">تنها کاربران با نقش «استاد» به این فرم دسترسی دارند. اطلاعات برای درج در دیتابیس آماده است.</div>
+               <div class="note">تنها کاربران با نقش «استاد» به این فرم دسترسی دارند.</div>
           </div>
      </div>
 </body>
