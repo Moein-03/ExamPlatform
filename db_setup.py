@@ -6,8 +6,12 @@ def setup_database():
     conn = sqlite3.connect(str(settings.DB_PATH))
     cursor = conn.cursor()
 
+    cursor.execute("DROP TABLE IF EXISTS TBL_users")
+    cursor.execute("DROP TABLE IF EXISTS TBL_exams")
+    cursor.execute("DROP TABLE IF EXISTS TBL_messages")
+
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS TBL_users (
+        CREATE TABLE TBL_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fullname TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
@@ -19,11 +23,10 @@ def setup_database():
     ''')
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS TBL_exams (
+        CREATE TABLE TBL_exams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             description TEXT,
-            exam_date TEXT,
             start_time TEXT,
             duration INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -31,7 +34,7 @@ def setup_database():
     ''')
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS TBL_messages (
+        CREATE TABLE TBL_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_name TEXT NOT NULL,
             user_email TEXT NOT NULL,
@@ -43,4 +46,4 @@ def setup_database():
 
     conn.commit()
     conn.close()
-    print("✅ Database setup completed.")
+    print("Database setup completed.")

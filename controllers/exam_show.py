@@ -7,13 +7,14 @@ def handle():
         return []
     
     conn = sqlite3.connect(str(settings.DB_PATH))
-    conn.row_factory = sqlite3.Row  # برای دسترسی به داده به صورت دیکشنری
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
     try:
+        
         cursor.execute("SELECT id, title, description, start_time, duration FROM TBL_exams ORDER BY id DESC")
         rows = cursor.fetchall()
-        # تبدیل به لیست دیکشنری
+
         result = [dict(row) for row in rows]
         return result
     except Exception as e:

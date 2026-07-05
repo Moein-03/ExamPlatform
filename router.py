@@ -17,9 +17,12 @@ def render_template(filename, context=None):
      if not template_path.exists():
           return None
      html = template_path.read_text(encoding="utf-8")
-     if context:
-          for key, value in context.items():
-               html = html.replace(f"{{{{ {key} }}}}", str(value))
+     if context is None:
+          context = {}
+     if 'base_path' not in context:
+          context['base_path'] = settings.BASE_PATH
+     for key, value in context.items():
+          html = html.replace(f"{{{{ {key} }}}}", str(value))
      return html
 
 def serve_html(html):
@@ -131,8 +134,15 @@ def route(path, method, body=None):
                return (result or "ویرایش کاربر با موفقیت", 200, {"Content-Type": "text/html"})
 
           case ("/exams", "GET"):
+               #exams = exam_show.handle()
+               #rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
+               #html = render_template("show_exams.htm", {"rows": rows})
+               #return serve_html(html)
                exams = exam_show.handle()
-               rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
+               if not exams:
+                    rows = "<tr><td colspan='5' style='text-align:center;'>هیچ آزمونی ثبت نشده است.</td></tr>"
+               else:
+                    rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
                html = render_template("show_exams.htm", {"rows": rows})
                return serve_html(html)
 

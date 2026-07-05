@@ -6,3 +6,4 @@ DB_PATH = BASE_DIR / 'examPlatform_database.db'
 TEMPLATE_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 STATIC_URL_PREFIX = "/static/"
+BASE_PATH = '/ExamPlatform' 
