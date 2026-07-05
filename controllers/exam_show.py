@@ -1,12 +1,23 @@
+# controllers/exam_show.py
 import sqlite3
-from pathlib import Path
 import settings
 
 def handle():
+    if not settings.DB_PATH.exists():
+        return []
+    
     conn = sqlite3.connect(str(settings.DB_PATH))
-    conn.row_factory = sqlite3.Row
+    conn.row_factory = sqlite3.Row  # برای دسترسی به داده به صورت دیکشنری
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, description, exam_date, start_time, duration_min, question_count, total_score, category, status, question_selection_type, allow_download, detailed_feedback, created_by, created_at FROM TBL_exams ORDER BY id DESC")
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
+    
+    try:
+        cursor.execute("SELECT id, title, description, start_time, duration FROM TBL_exams ORDER BY id DESC")
+        rows = cursor.fetchall()
+        # تبدیل به لیست دیکشنری
+        result = [dict(row) for row in rows]
+        return result
+    except Exception as e:
+        print(f"Error in exam_show: {e}")
+        return []
+    finally:
+        conn.close()

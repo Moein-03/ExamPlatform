@@ -11,14 +11,14 @@ def handle(data):
      try:
           title = data.get('title', [''])[0].strip()
           description = data.get('description', [''])[0].strip()
-          exam_date = data.get('exam_date', [''])[0].strip()
+          start_time = data.get('start_time', [''])[0].strip()
           duration = data.get('duration', ['0'])[0].strip()
 
           if not title:
                return "عنوان آزمون الزامی است."
 
-          sql = '''INSERT INTO TBL_exams (title, description, exam_date, duration) VALUES (?, ?, ?, ?)'''
-          cursor.execute(sql, (title, description, exam_date, duration))
+          sql = '''INSERT INTO TBL_exams (title, description, start_time, duration) VALUES (?, ?, ?, ?)'''
+          cursor.execute(sql, (title, description, start_time, duration))
           conn.commit()
           return "آزمون با موفقیت ثبت شد."
      except Exception as e:

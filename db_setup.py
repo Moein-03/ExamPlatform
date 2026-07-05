@@ -13,7 +13,8 @@ def setup_database():
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             role TEXT DEFAULT 'student',
-            university_id TEXT
+            university_id TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
@@ -23,6 +24,7 @@ def setup_database():
             title TEXT NOT NULL,
             description TEXT,
             exam_date TEXT,
+            start_time TEXT,
             duration INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )

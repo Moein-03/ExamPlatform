@@ -11,7 +11,7 @@
                <div class="card-header">
                     <h1>ویرایش آزمون</h1>
                </div>
-               <form action="/ExamPlatform/admin/exam/{{ id }}" method="POST">
+               <form action="/ExamPlatform/teacher/exam/{{ id }}" method="POST">
                     <input type="hidden" name="_method" value="PUT">
                     <div class="form-group">
                          <label>عنوان</label>
@@ -22,13 +22,17 @@
                          <textarea name="description">{{ description }}</textarea>
                     </div>
                     <div class="form-row">
-                         <div class="form-group">
+                         <!-- <div class="form-group">
                          <label>تاریخ برگزاری</label>
                          <input type="date" name="exam_date" value="{{ exam_date }}" required>
                          </div>
                          <div class="form-group">
                          <label>زمان شروع</label>
                          <input type="time" name="start_time" value="{{ start_time }}" required>
+                         </div> -->
+                         <div class="form-group">
+                              <label>تاریخ و زمان شروع:</label>
+                              <input type="datetime-local" name="start_time" value="{{ start_time }}">
                          </div>
                     </div>
                     <div class="form-row">

@@ -13,7 +13,7 @@
                     <h1>ایجاد آزمون جدید</h1>
                     <p>استاد گرامی، مشخصات آزمون را وارد کنید</p>
                </div>
-               <form action="http://127.0.0.1:8000/" method="POST">
+               <form action="http://127.0.0.1:8000/ExamPlatform/" method="POST">
                     <div class="form-group">
                          <label><span class="required">*</span> عنوان آزمون</label>
                          <input type="text" name="exam_title" placeholder="مثال: ریاضی پایه - فصل دوم" required>
@@ -23,13 +23,16 @@
                          <textarea name="description" rows="3" placeholder="توضیحات تکمیلی..."></textarea>
                     </div>
                     <div class="form-row">
-                         <div class="form-group">
+                         <!-- <div class="form-group">
                          <label><span class="required">*</span> تاریخ برگزاری</label>
                          <input type="date" name="exam_date" required>
                          </div>
                          <div class="form-group">
                          <label><span class="required">*</span> زمان شروع</label>
                          <input type="time" name="start_time" required>
+                         </div> -->
+                         <div class="form-group">
+                              <input type="datetime-local" name="start_time">
                          </div>
                     </div>
                     <div class="form-row">
