@@ -1,44 +1,27 @@
 # controllers/exam_update.py
 import sqlite3
 import settings
-from urllib.parse import parse_qs
 
-def handle(exam_id, body):
-     if not exam_id:
-          return "شناسه آزمون ارسال نشده است."
-
-     params = parse_qs(body)
-
-     title = params.get('title', [''])[0].strip()
-     description = params.get('description', [''])[0].strip()
-     exam_date = params.get('exam_date', [''])[0].strip()
-     start_time = params.get('start_time', [''])[0].strip()
-     duration_min = params.get('duration_min', ['90'])[0].strip()
-     question_count = params.get('question_count', ['20'])[0].strip()
-     total_score = params.get('total_score', ['100'])[0].strip()
-     category = params.get('category', [''])[0].strip()
-     status = params.get('status', ['فعال'])[0].strip()
-
-     if not title or not exam_date or not start_time:
-          return "عنوان، تاریخ و زمان شروع الزامی است."
+def handle(exam_id, data):
+     if not settings.DB_PATH.exists():
+          return "دیتابیس یافت نشد."
 
      conn = sqlite3.connect(str(settings.DB_PATH))
      cursor = conn.cursor()
-
      try:
-          cursor.execute("""
-               UPDATE TBL_exams SET
-                    title=?, description=?, exam_date=?, start_time=?,
-                    duration_min=?, question_count=?, total_score=?,
-                    category=?, status=?
-               WHERE id=?
-          """, (title, description, exam_date, start_time,
-               int(duration_min), int(question_count), float(total_score),
-               category, status, exam_id))
+          title = data.get('title', [''])[0].strip()
+          description = data.get('description', [''])[0].strip()
+          exam_date = data.get('exam_date', [''])[0].strip()
+          duration = data.get('duration', ['0'])[0].strip()
 
+          if not title:
+               return "عنوان آزمون الزامی است."
+
+          sql = '''UPDATE TBL_exams SET title=?, description=?, exam_date=?, duration=? WHERE id=?'''
+          cursor.execute(sql, (title, description, exam_date, duration, exam_id))
           conn.commit()
-          return f"آزمون با شناسه {exam_id} با موفقیت ویرایش شد."
+          return "آزمون با موفقیت ویرایش شد."
      except Exception as e:
-          return f"خطا در ویرایش: {str(e)}"
+          return f"خطا: {e}"
      finally:
           conn.close()
