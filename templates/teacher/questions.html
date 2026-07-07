@@ -1,0 +1,60 @@
+<div id="teacher-questions-page">
+     <h2>بانک سوالات</h2>
+     <a href="#" data-link="{{ base_url }}/teacher/question/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">+ سوال جدید</a>
+     <a href="#" data-link="{{ base_url }}/teacher/question/import" class="mdl-button mdl-js-button mdl-button--raised">بارگذاری JSON</a>
+     <a href="#" data-link="{{ base_url }}/teacher/question/export" class="mdl-button mdl-js-button mdl-button--raised">دانلود JSON</a>
+     <div id="questions-table-container" style="margin-top:20px;">
+          <table style="width:100%; border-collapse:collapse;">
+               <thead>
+                    <tr>
+                         <th>متن سوال</th>
+                         <th>نوع</th>
+                         <th>پاسخ صحیح</th>
+                         <th>عملیات</th>
+                    </tr>
+               </thead>
+               <tbody id="questions-tbody"></tbody>
+          </table>
+     </div>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var questions = window.__DATA__ && window.__DATA__.questions ? window.__DATA__.questions : [];
+
+          var tbody = document.getElementById('questions-tbody');
+          if (!tbody) return;
+
+          var html = '';
+          for (var i = 0; i < questions.length; i++) {
+               var q = questions[i];
+               var type = q.question_type === 'multiple_choice' ? 'چندگزینه‌ای' : 'جاخالی';
+               html += '<tr>';
+               html += '<td>' + (q.question_text || '') + '</td>';
+               html += '<td>' + type + '</td>';
+               html += '<td>' + (q.correct_answer || '') + '</td>';
+               html += '<td>';
+               html += '<form method="POST" action="' + base_url + '/teacher/question/delete/' + q.id + '" style="display:inline;">';
+               html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color:red;"><i class="material-icons">delete</i></button>';
+               html += '</form>';
+               html += '</td>';
+               html += '</tr>';
+          }
+
+          if (questions.length === 0) {
+               html = '<tr><td colspan="4" style="text-align:center;">هیچ سوالی یافت نشد</td></tr>';
+          }
+
+          tbody.innerHTML = html;
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

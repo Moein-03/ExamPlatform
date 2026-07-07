@@ -1,49 +1,43 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>ثبت‌نام کاربر</title>
-     <link rel="stylesheet" href="{{ base_path }}/static/style.css">
-</head>
-<body>
-     <div class="container">
-          <div class="card">
-               <div class="card-header">
-                    <h1>ثبت‌ نام جدید</h1>
-                    <p>اطلاعات خود را وارد کنید</p>
-               </div>
-               <form action="{{ base_path }}/register" method="POST">
-                    <div class="form-group">
-                         <label><span class="required">*</span> نام کامل</label>
-                         <input type="text" name="fullname" placeholder="مثال: علی محمدی" required>
-                    </div>
-                    <div class="form-group">
-                         <label><span class="required">*</span> ایمیل</label>
-                         <input type="email" name="email" placeholder="example@email.com" required>
-                    </div>
-                    <div class="form-group">
-                         <label><span class="required">*</span> رمز عبور</label>
-                         <input type="password" name="password" placeholder="حداقل ۶ کاراکتر" required>
-                    </div>
-                    <div class="form-group">
-                         <label>نقش</label>
-                         <select name="role">
-                         <option value="student">دانشجو</option>
-                         <option value="teacher">استاد</option>
-                         <option value="admin">مدیر</option>
-                         </select>
-                    </div>
-                    <div class="form-group">
-                         <label>شماره دانشجویی/پرسنلی</label>
-                         <input type="text" name="university_id" placeholder="اختیاری">
-                    </div>
-                    <button type="submit">ثبت‌نام</button>
-               </form>
-               <div class="note">
-                    <a href="{{ base_path }}/">بازگشت به صفحه اصلی</a>
-               </div>
+<div id="register-page" style="max-width:400px; margin:0 auto; padding:20px;">
+     <h3>ثبت نام</h3>
+     <form id="register-form" method="POST">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="text" id="firstname" name="firstname" required>
+               <label class="mdl-textfield__label" for="firstname">نام</label>
           </div>
-     </div>
-</body>
-</html>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="text" id="lastname" name="lastname" required>
+               <label class="mdl-textfield__label" for="lastname">نام خانوادگی</label>
+          </div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="text" id="username" name="username" required>
+               <label class="mdl-textfield__label" for="username">نام کاربری</label>
+          </div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="password" id="password" name="password" required>
+               <label class="mdl-textfield__label" for="password">رمز عبور</label>
+          </div>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="width:100%;">ثبت نام</button>
+     </form>
+     <p style="text-align:center;"><a href="#" data-link="{{ base_url }}/login">ورود</a></p>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+
+          var form = document.getElementById('register-form');
+          if (form) {
+               form.action = '{{ base_url }}/register';
+          }
+     })();
+</script>

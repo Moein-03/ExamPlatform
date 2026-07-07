@@ -1,25 +1,24 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>صفحه اصلی | سامانه آزمون</title>
-     <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-     <div class="container">
-          <h1>سامانه مدیریت آزمون</h1>
-          <nav>
-               <ul>
-                    <li><a href="/ExamPlatform/exams">لیست آزمون‌ها</a></li>
-                    <li><a href="/ExamPlatform/users">لیست کاربران</a></li>
-                    <li><a href="/ExamPlatform/messages">پیام‌ها</a></li>
-                    <li><a href="/ExamPlatform/contact">تماس با ما</a></li>
-                    <li><a href="/ExamPlatform/register">ثبت‌نام</a></li>
-                    <li><a href="/ExamPlatform/teacher/exam">ثبت آزمون جدید</a></li>
-                    <li><a href="/ExamPlatform/setup">راه‌اندازی دیتابیس</a></li>
-               </ul>
-          </nav>
-     </div>
-</body>
-</html>
+<div id="home-page">
+     <h2>به سامانه مدیریت آزمون‌ها خوش آمدید</h2>
+     <p>این صفحه اصلی پروژه است.</p>
+     <p>
+          <a href="#" data-link="{{ base_url }}/login" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ورود</a>
+          <a href="#" data-link="{{ base_url }}/register" class="mdl-button mdl-js-button mdl-button--raised">ثبت نام</a>
+     </p>
+     <p><a href="#" data-link="{{ base_url }}/exams">مشاهده آزمون‌ها</a></p>
+     <p><a href="#" data-link="{{ base_url }}/setup">راه‌اندازی دیتابیس</a></p>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

@@ -1,0 +1,19 @@
+<div style="text-align:center; padding:60px;">
+    <i class="material-icons" style="font-size:80px; color:#ff9800;">lock</i>
+    <h2>۴۰۱ - نیاز به ورود</h2>
+    <a href="#" data-link="{{ base_url }}/login" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ورود</a>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

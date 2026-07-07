@@ -1,0 +1,38 @@
+<div id="exam-feedback-page">
+     <h2>بازخورد آزمون</h2>
+     <div id="feedback-container"></div>
+     <a href="#" data-link="{{ base_url }}/student/exams" class="mdl-button mdl-js-button">بازگشت</a>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var feedback = window.__DATA__ && window.__DATA__.feedback ? window.__DATA__.feedback : [];
+          var stats = window.__DATA__ && window.__DATA__.stats ? window.__DATA__.stats : {};
+
+          var container = document.getElementById('feedback-container');
+          if (!container) return;
+
+          var html = '';
+          if (feedback && feedback.length > 0) {
+               var f = feedback[0];
+               html += '<p>نمره شما: ' + (f.score || 0) + '%</p>';
+               html += '<p>میانگین کل: ' + (stats.average_score || 0) + '%</p>';
+               html += '<p>بیشترین نمره: ' + (stats.highest_score || 0) + '%</p>';
+               html += '<p>تعداد شرکت‌کنندگان: ' + (stats.total_participants || 0) + '</p>';
+          } else {
+               html = '<p>هنوز نمره‌ای برای این آزمون ثبت نشده است</p>';
+          }
+
+          container.innerHTML = html;
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

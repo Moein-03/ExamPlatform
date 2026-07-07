@@ -1,159 +1,256 @@
 # router.py
-import json
-from pathlib import Path
-from urllib.parse import parse_qs
-import mimetypes
+from core import auth, response, cookie
 import settings
 import db_setup
 from controllers import (
-    message_add, user_add, exam_add,
-    user_show, message_show, exam_show,
-    user_get_one, user_update,
-    exam_get_one, exam_update
+     user_add, user_login, user_get_one, user_get_all, user_update_role,
+     exam_add, exam_get_one, exam_get_all, exam_update, exam_delete,
+     exam_submit, exam_results,
+     question_add, question_get_all, question_get_by_exam, question_delete,
+     question_import, question_export,
+     report_stats
 )
 
-def render_template(filename, context=None):
-     template_path = settings.TEMPLATE_DIR / filename
-     if not template_path.exists():
-          return None
-     html = template_path.read_text(encoding="utf-8")
-     if context is None:
-          context = {}
-     if 'base_path' not in context:
-          context['base_path'] = settings.BASE_PATH
-     for key, value in context.items():
-          html = html.replace(f"{{{{ {key} }}}}", str(value))
-     return html
+def route(path, method, data, headers):
+     print(f"[DEBUG] path: '{path}', method: '{method}'")
 
-def serve_html(html):
-     return (html or "Template not found", 200, {"Content-Type": "text/html; charset=utf-8"})
+     session_id = cookie.get_cookie(headers, "session_id")
+     current_user = auth.get_current_user(session_id)
+     user_id = current_user['id'] if current_user else None
+     user_role = auth.get_user_role(user_id) if user_id else None
 
-def serve_static_file(path):
-     file_path = settings.BASE_DIR / path.lstrip('/')
-     if not file_path.exists():
-          return _404()
-     content_type, _ = mimetypes.guess_type(file_path)
-     if not content_type:
-          content_type = "application/octet-stream"
-     return (file_path.read_bytes(), 200, {"Content-Type": content_type})
+     # استخراج id از مسیر
+     path_parts = path.strip("/").split("/")
+     item_id = None
+     if path_parts and path_parts[-1].isdigit():
+          item_id = int(path_parts.pop())
+     clean_path = "/" + "/".join(path_parts) if path_parts else "/"
 
-def extract_id_and_clean_path(path):
-     parts = path.strip("/").split("/")
-     id_val = None
-     if parts and parts[-1].isdigit():
-          id_val = int(parts.pop())
-     clean_path = "/" + "/".join(parts) if parts else "/"
-     return clean_path, id_val
+     print(f"[DEBUG] clean_path: '{clean_path}', item_id: {item_id}")
 
-def _404():
-     html = render_template("errors/404.html") or "404 - صفحه یافت نشد"
-     return (html, 404, {"Content-Type": "text/html; charset=utf-8"})
-
-def _403():
-     html = render_template("errors/403.html") or "403 - دسترسی ممنوع"
-     return (html, 403, {"Content-Type": "text/html; charset=utf-8"})
-
-def _500():
-     html = render_template("errors/500.html") or "500 - خطای سرور"
-     return (html, 500, {"Content-Type": "text/html; charset=utf-8"})
-
-def route(path, method, body=None):
-     if isinstance(body, str):
-          data = parse_qs(body) if body else {}
-     elif isinstance(body, dict):
-          data = body
-     else:
-          data = {}
-
-     if method == "POST" and '_method' in data:
+     # پشتیبانی از _method
+     if method == "POST" and data and '_method' in data:
           method = data['_method'][0].upper()
 
-     clean_path, item_id = extract_id_and_clean_path(path)
+     # ---------- مسیرهای عمومی ----------
+     if clean_path == "/" and method == "GET":
+          html = response.render_master("index.html", title="صفحه اصلی")
+          return response.serve_html(html) if html else response._200("صفحه اصلی - قالب index.html را ایجاد کنید")
 
-     match (clean_path, method):
-          case ("/", "GET"):
-               html = render_template("index.html") or "<h1>خوش آمدید</h1>"
-               return serve_html(html)
+     if clean_path == "/setup" and method == "GET":
+          db_setup.setup_database()
+          return response._200("✅ Database setup completed")
 
-          case ("/setup", "GET"):
-               db_setup.setup_database()
-               return ("Database setup completed", 200, {"Content-Type": "text/html"})
+     # مسیر /exams - هدایت خودکار بر اساس نقش
+     if clean_path == "/exams" and method == "GET":
+          if not user_id:
+               return response.redirect("/login")
+          if auth.is_admin(user_id):
+               return response.redirect("/admin/users")
+          if auth.is_teacher(user_id):
+               return response.redirect("/teacher/exam")
+          if auth.is_student(user_id):
+               return response.redirect("/student/exams")
+          return response._403()
 
-          case ("/contact", "GET"):
-               html = render_template("contact.htm")
-               return serve_html(html)
+     # ---------- احراز هویت ----------
+     if clean_path == "/login" and method == "GET":
+          if user_id:
+               return response.redirect("/dashboard")
+          html = response.render_master("login.html", title="ورود")
+          return response.serve_html(html)
 
-          case ("/contact", "POST"):
-               result = message_add.handle(data)
-               return (result, 200, {"Content-Type": "text/html"})
+     if clean_path == "/login" and method == "POST":
+          user = user_login.handle(data)
+          if user:
+               sid = auth.create_session(user['id'])
+               cookie_header = cookie.set_cookie('session_id', sid, max_age=604800)
+               html = response.render_master("dashboard.html", {'user': user}, "داشبورد")
+               return response.serve_html(html, {"Set-Cookie": cookie_header})
+          else:
+               context = {'error': 'نام کاربری یا رمز عبور اشتباه است'}
+               html = response.render_master("login.html", context, "ورود")
+               return response.serve_html(html)
 
-          case ("/register", "GET"):
-               html = render_template("register.htm")
-               return serve_html(html)
+     if clean_path == "/register" and method == "GET":
+          if user_id:
+               return response.redirect("/dashboard")
+          html = response.render_master("register.html", title="ثبت نام")
+          return response.serve_html(html)
 
-          case ("/register", "POST"):
-               result = user_add.handle(data)
-               return (result, 200, {"Content-Type": "text/html"})
+     if clean_path == "/register" and method == "POST":
+          result = user_add.handle(data)
+          if "موفقیت" in result:
+               return response.redirect("/login")
+          return response._200(result)
 
-          case ("/teacher/exam", "GET") if not item_id:
-               html = render_template("exam_form.htm")
-               return serve_html(html)
+     if clean_path == "/logout" and method == "GET":
+          if session_id:
+               auth.delete_session(session_id)
+               cookie_header = cookie.delete_cookie('session_id')
+               return response.redirect("/", {"Set-Cookie": cookie_header})
+          return response.redirect("/")
 
-          case ("/teacher/exam", "POST"):
-               result = exam_add.handle(data)
-               return (result, 200, {"Content-Type": "text/html"})
+     if clean_path == "/dashboard" and method == "GET":
+          if not user_id:
+               return response._401()
+          html = response.render_master("dashboard.html", {'user': current_user}, "داشبورد")
+          return response.serve_html(html)
 
-          case ("/teacher/exam", "GET") if item_id:
-               exam = exam_get_one.handle(item_id)
-               if not exam:
-                    return _404()
-               html = render_template("edit_exam.html", exam)
-               return serve_html(html)
+     # ---------- ادمین ----------
+     if clean_path.startswith("/admin"):
+          if not user_id:
+               return response._401()
+          if not auth.is_admin(user_id):
+               return response._403()
 
-          case ("/teacher/exam", "PUT") if item_id:
-               result = exam_update.handle(item_id, data)
-               return (result or "ویرایش با موفقیت انجام شد", 200, {"Content-Type": "text/html"})
+          if clean_path == "/admin/users" and method == "GET":
+               users = user_get_all.handle()
+               html = response.render_master("admin/users.html", {'users': users}, "مدیریت کاربران")
+               return response.serve_html(html)
 
-          case ("/admin/user", "GET") if item_id:
+          if clean_path == "/admin/user" and method == "GET" and item_id is not None:
                user = user_get_one.handle(item_id)
                if not user:
-                    return _404()
-               html = render_template("edit_user.html", user)
-               return serve_html(html)
+                    return response._404()
+               html = response.render_master("admin/user-edit.html", {'user': user}, "ویرایش کاربر")
+               return response.serve_html(html)
 
-          case ("/admin/user", "PUT") if item_id:
-               result = user_update.handle(item_id, data)
-               return (result or "ویرایش کاربر با موفقیت", 200, {"Content-Type": "text/html"})
+          if clean_path == "/admin/user" and method == "POST" and item_id is not None:
+               user_update_role.handle(item_id, data)
+               return response.redirect("/admin/users")
 
-          case ("/exams", "GET"):
-               exams = exam_show.handle()
-               if not exams:
-                    rows = "<tr><td colspan='5' style='text-align:center;'>هیچ آزمونی ثبت نشده است.</td></tr>"
-               else:
-                    rows = ''.join(render_template("partials/exam_row.htm", exam) for exam in exams)
-               html = render_template("show_exams.htm", {"rows": rows})
-               return serve_html(html)
+          return response._404()
 
-          case ("/users", "GET"):
-               users = user_show.handle()
-               if not users:
-                    rows = "<tr><td colspan='6' style='text-align:center;'>هیچ کاربری ثبت نشده است.</td></tr>"
-               else:
-                    rows = ''.join(render_template("partials/user_row.htm", user) for user in users)
-               html = render_template("show_users.htm", {"rows": rows})
-               return serve_html(html)
+     # ---------- استاد ----------
+     if clean_path.startswith("/teacher"):
+          if not user_id:
+               return response._401()
+          if not auth.is_teacher(user_id):
+               return response._403()
 
-          case ("/messages", "GET"):
-               messages = message_show.handle()
-               if not messages:
-                    rows = "<tr><td colspan='5' style='text-align:center;'>هیچ پیامی دریافت نشده است.</td></tr>"
-               else:
-                    rows = ''.join(render_template("partials/message_row.htm", msg) for msg in messages)
-               html = render_template("show_messages.htm", {"rows": rows})
-               return serve_html(html)
+          # سوالات
+          if clean_path == "/teacher/question" and method == "GET":
+               questions = question_get_all.handle(user_id)
+               html = response.render_master("teacher/questions.html", {'questions': questions}, "بانک سوالات")
+               return response.serve_html(html)
 
-          case _ if clean_path.startswith("/static/"):
-               return serve_static_file(clean_path)
+          if clean_path == "/teacher/question/add" and method == "GET":
+               html = response.render_master("teacher/question-form.html", title="افزودن سوال")
+               return response.serve_html(html)
 
-          case _:
-               return _404()
+          if clean_path == "/teacher/question/add" and method == "POST":
+               result = question_add.handle(data, user_id)
+               if "موفقیت" in result:
+                    return response.redirect("/teacher/question")
+               return response._200(result)
+
+          if clean_path == "/teacher/question/delete" and method == "POST" and item_id is not None:
+               question_delete.handle(item_id, user_id)
+               return response.redirect("/teacher/question")
+
+          if clean_path == "/teacher/question/import" and method == "GET":
+               html = response.render_master("teacher/question-import.html", title="بارگذاری سوالات")
+               return response.serve_html(html)
+
+          if clean_path == "/teacher/question/import" and method == "POST":
+               question_import.handle(data, user_id)
+               return response.redirect("/teacher/question")
+
+          if clean_path == "/teacher/question/export" and method == "GET":
+               return question_export.handle(user_id)
+
+          # آزمون‌ها
+          if clean_path == "/teacher/exam" and method == "GET":
+               exams = exam_get_all.handle(user_id)
+               html = response.render_master("teacher/exams.html", {'exams': exams}, "مدیریت آزمون‌ها")
+               return response.serve_html(html)
+
+          if clean_path == "/teacher/exam/add" and method == "GET":
+               questions = question_get_all.handle(user_id)
+               html = response.render_master("teacher/exam-form.html", {'questions': questions}, "ساخت آزمون جدید")
+               return response.serve_html(html)
+
+          if clean_path == "/teacher/exam/add" and method == "POST":
+               result = exam_add.handle(data, user_id)
+               if "موفقیت" in result:
+                    return response.redirect("/teacher/exam")
+               return response._200(result)
+
+          if clean_path == "/teacher/exam" and method == "GET" and item_id is not None:
+               exam = exam_get_one.handle(item_id, user_id)
+               if not exam:
+                    return response._404()
+               questions = question_get_by_exam.handle(item_id)
+               html = response.render_master("teacher/exam-detail.html", {'exam': exam, 'questions': questions}, "جزئیات آزمون")
+               return response.serve_html(html)
+
+          if clean_path == "/teacher/exam/edit" and method == "GET" and item_id is not None:
+               exam = exam_get_one.handle(item_id, user_id)
+               if not exam:
+                    return response._404()
+               questions = question_get_all.handle(user_id)
+               html = response.render_master("teacher/exam-form.html", {'exam': exam, 'questions': questions}, "ویرایش آزمون")
+               return response.serve_html(html)
+
+          if clean_path == "/teacher/exam/edit" and method == "POST" and item_id is not None:
+               exam_update.handle(item_id, data, user_id)
+               return response.redirect("/teacher/exam")
+
+          if clean_path == "/teacher/exam/delete" and method == "POST" and item_id is not None:
+               exam_delete.handle(item_id, user_id)
+               return response.redirect("/teacher/exam")
+
+          if clean_path == "/teacher/exam/publish" and method == "POST" and item_id is not None:
+               exam_update.handle(item_id, {'is_published': '1'}, user_id)
+               return response.redirect("/teacher/exam")
+
+          if clean_path == "/teacher/exam/results" and method == "GET" and item_id is not None:
+               results = exam_results.handle(item_id)
+               stats = report_stats.handle(item_id)
+               html = response.render_master("teacher/results.html", {'results': results, 'stats': stats}, "نتایج آزمون")
+               return response.serve_html(html)
+
+          return response._404()
+
+     # ---------- دانشجو ----------
+     if clean_path.startswith("/student"):
+          if not user_id:
+               return response._401()
+          if not auth.is_student(user_id):
+               return response._403()
+
+          if clean_path == "/student/exams" and method == "GET":
+               exams = exam_get_all.handle(None, only_published=True)
+               html = response.render_master("student/exams.html", {'exams': exams}, "آزمون‌های من")
+               return response.serve_html(html)
+
+          if clean_path == "/student/exam/take" and method == "GET" and item_id is not None:
+               exam = exam_get_one.handle(item_id, only_published=True)
+               if not exam or not exam.get('is_published'):
+                    return response._404()
+               questions = question_get_by_exam.handle(item_id)
+               context = {'exam': exam, 'questions': questions, 'student_id': user_id}
+               html = response.render_master("student/exam-take.html", context, exam.get('title', 'آزمون'))
+               return response.serve_html(html)
+
+          if clean_path == "/student/exam/submit" and method == "POST" and item_id is not None:
+               result = exam_submit.handle(item_id, user_id, data)
+               if "موفقیت" in result:
+                    return response.redirect(f"/student/exam/feedback/{item_id}")
+               return response._200(result)
+
+          if clean_path == "/student/exam/feedback" and method == "GET" and item_id is not None:
+               feedback = exam_results.handle(item_id, user_id)
+               stats = report_stats.handle(item_id)
+               context = {'feedback': feedback, 'stats': stats}
+               html = response.render_master("student/exam-feedback.html", context, "بازخورد آزمون")
+               return response.serve_html(html)
+
+          return response._404()
+
+     # ---------- استاتیک ----------
+     if clean_path.startswith("/static/"):
+          return response.serve_static_file(clean_path)
+
+     return response._404()

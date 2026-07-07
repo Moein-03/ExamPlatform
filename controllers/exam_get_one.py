@@ -2,22 +2,18 @@
 import sqlite3
 import settings
 
-def handle(exam_id):
-     if not settings.DB_PATH.exists():
-          return None
-     
-     conn = sqlite3.connect(str(settings.DB_PATH))
-     conn.row_factory = sqlite3.Row
-     cursor = conn.cursor()
-     
-     try:
-          cursor.execute("SELECT id, title, description, start_time, duration FROM TBL_exams WHERE id = ?", (exam_id,))
-          row = cursor.fetchone()
-          if row:
-               return dict(row)
-          return None
-     except Exception as e:
-          print(f"Error in exam_get_one: {e}")
-          return None
-     finally:
-          conn.close()
+def handle(exam_id, teacher_id=None, only_published=False):
+     dbc = sqlite3.connect(settings.DB_PATH)
+     dbc.row_factory = sqlite3.Row
+     cursor = dbc.cursor()
+     query = 'SELECT * FROM exams WHERE id = ?'
+     params = [exam_id]
+     if teacher_id:
+          query += ' AND teacher_id = ?'
+          params.append(teacher_id)
+     if only_published:
+          query += ' AND is_published = 1'
+     cursor.execute(query, params)
+     row = cursor.fetchone()
+     dbc.close()
+     return dict(row) if row else None

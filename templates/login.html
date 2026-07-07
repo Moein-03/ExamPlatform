@@ -1,0 +1,45 @@
+<div id="login-page" style="max-width:400px; margin:0 auto; padding:20px;">
+     <h3>ورود به سامانه</h3>
+     <div id="error-container" class="hidden" style="background:#f8d7da; color:#721c24; padding:10px; border-radius:4px; margin-bottom:10px;"></div>
+     <form id="login-form" method="POST">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="text" id="username" name="username" required>
+               <label class="mdl-textfield__label" for="username">نام کاربری</label>
+          </div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="password" id="password" name="password" required>
+               <label class="mdl-textfield__label" for="password">رمز عبور</label>
+          </div>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="width:100%;">ورود</button>
+     </form>
+     <p style="text-align:center;"><a href="#" data-link="{{ base_url }}/register">ثبت نام</a></p>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
+          var error = window.__DATA__ && window.__DATA__.error ? window.__DATA__.error : null;
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+
+          var form = document.getElementById('login-form');
+          if (form) {
+               form.action = '{{ base_url }}/login';
+          }
+
+          if (error) {
+               var errContainer = document.getElementById('error-container');
+               if (errContainer) {
+                    errContainer.textContent = error;
+                    errContainer.classList.remove('hidden');
+               }
+          }
+     })();
+</script>

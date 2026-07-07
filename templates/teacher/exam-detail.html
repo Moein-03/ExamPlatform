@@ -1,0 +1,44 @@
+<div id="teacher-exam-detail-page">
+     <h2 id="exam-title"></h2>
+     <p id="exam-description"></p>
+     <p id="exam-info"></p>
+     <div id="questions-list"></div>
+     <a href="#" data-link="{{ base_url }}/teacher/exam" class="mdl-button mdl-js-button">بازگشت</a>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var exam = window.__DATA__ && window.__DATA__.exam ? window.__DATA__.exam : null;
+          var questions = window.__DATA__ && window.__DATA__.questions ? window.__DATA__.questions : [];
+
+          if (!exam) return;
+
+          document.getElementById('exam-title').textContent = exam.title || 'جزئیات آزمون';
+          document.getElementById('exam-description').textContent = exam.description || '';
+          document.getElementById('exam-info').textContent = 'تعداد سوالات: ' + (exam.total_questions || 0) + ' | زمان: ' + (exam.duration || 0) + ' دقیقه | وضعیت: ' + (exam.is_published ? 'منتشر شده' : 'پیش‌نویس');
+
+          var container = document.getElementById('questions-list');
+          if (container) {
+               var html = '<h4>سوالات:</h4><ul>';
+               for (var i = 0; i < questions.length; i++) {
+                    var q = questions[i];
+                    html += '<li>' + (q.question_text || '') + ' (' + (q.question_type === 'multiple_choice' ? 'چندگزینه‌ای' : 'جاخالی') + ')</li>';
+               }
+               if (questions.length === 0) {
+                    html += '<li>هیچ سوالی به این آزمون اضافه نشده است</li>';
+               }
+               html += '</ul>';
+               container.innerHTML = html;
+          }
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

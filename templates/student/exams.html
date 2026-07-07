@@ -1,0 +1,35 @@
+<div id="student-exams-page">
+     <h2>آزمون‌های منتشر شده</h2>
+     <div id="exams-cards-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:20px;"></div>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var exams = window.__DATA__ && window.__DATA__.exams ? window.__DATA__.exams : [];
+
+          var container = document.getElementById('exams-cards-container');
+          if (!container) return;
+
+          var html = '';
+          for (var i = 0; i < exams.length; i++) {
+               var e = exams[i];
+               html += '<div style="background:white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+               html += '<h3>' + (e.title || '') + '</h3>';
+               html += '<p>' + (e.description || '') + '</p>';
+               html += '<p>تعداد سوالات: ' + (e.total_questions || 0) + ' | زمان: ' + (e.duration || 0) + ' دقیقه</p>';
+               html += '<a href="' + base_url + '/student/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">شرکت در آزمون</a>';
+               html += '</div>';
+          }
+
+          if (exams.length === 0) {
+               html = '<p style="text-align:center; color:#999;">هیچ آزمون منتشر شده‌ای وجود ندارد</p>';
+          }
+
+          container.innerHTML = html;
+
+          if (window.componentHandler) {
+               window.componentHandler.upgradeAllRegistered();
+          }
+     })();
+</script>

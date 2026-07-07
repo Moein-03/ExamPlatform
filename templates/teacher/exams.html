@@ -1,0 +1,63 @@
+<div id="teacher-exams-page">
+     <h2>مدیریت آزمون‌ها</h2>
+     <a href="#" data-link="{{ base_url }}/teacher/exam/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">+ ساخت آزمون جدید</a>
+     <div id="exams-table-container" style="margin-top:20px;">
+          <table style="width:100%; border-collapse:collapse;">
+               <thead>
+                    <tr>
+                         <th>عنوان</th>
+                         <th>تعداد سوالات</th>
+                         <th>زمان</th>
+                         <th>وضعیت</th>
+                         <th>عملیات</th>
+                    </tr>
+               </thead>
+               <tbody id="exams-tbody"></tbody>
+          </table>
+     </div>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var exams = window.__DATA__ && window.__DATA__.exams ? window.__DATA__.exams : [];
+
+          var tbody = document.getElementById('exams-tbody');
+          if (!tbody) return;
+
+          var html = '';
+          for (var i = 0; i < exams.length; i++) {
+               var e = exams[i];
+               var status = e.is_published ? 'منتشر شده' : 'پیش‌نویس';
+               html += '<tr>';
+               html += '<td>' + (e.title || '') + '</td>';
+               html += '<td>' + (e.total_questions || 0) + '</td>';
+               html += '<td>' + (e.duration || 0) + ' دقیقه</td>';
+               html += '<td>' + status + '</td>';
+               html += '<td>';
+               html += '<a href="' + base_url + '/teacher/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">visibility</i></a>';
+               html += '<a href="' + base_url + '/teacher/exam/edit/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">edit</i></a>';
+               html += '<a href="' + base_url + '/teacher/exam/results/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">assessment</i></a>';
+               html += '<form method="POST" action="' + base_url + '/teacher/exam/delete/' + e.id + '" style="display:inline;">';
+               html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color:red;"><i class="material-icons">delete</i></button>';
+               html += '</form>';
+               html += '</td>';
+               html += '</tr>';
+          }
+
+          if (exams.length === 0) {
+               html = '<tr><td colspan="5" style="text-align:center;">هیچ آزمونی یافت نشد</td></tr>';
+          }
+
+          tbody.innerHTML = html;
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

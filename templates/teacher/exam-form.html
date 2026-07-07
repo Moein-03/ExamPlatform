@@ -1,0 +1,73 @@
+<div id="teacher-exam-form-page">
+     <h2 id="form-title">ساخت آزمون جدید</h2>
+     <form id="exam-form" method="POST">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="text" id="title" name="title" required>
+               <label class="mdl-textfield__label" for="title">عنوان آزمون</label>
+          </div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <textarea class="mdl-textfield__input" id="description" name="description" rows="3"></textarea>
+               <label class="mdl-textfield__label" for="description">توضیحات</label>
+          </div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <input class="mdl-textfield__input" type="number" id="duration" name="duration" value="30" required>
+               <label class="mdl-textfield__label" for="duration">مدت زمان (دقیقه)</label>
+          </div>
+          <p><label><input type="checkbox" name="is_random" value="true"> انتخاب تصادفی سوالات</label></p>
+          <h4>انتخاب سوالات</h4>
+          <div id="questions-checkboxes"></div>
+          <br>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره</button>
+          <a href="#" data-link="{{ base_url }}/teacher/exam" class="mdl-button mdl-js-button">بازگشت</a>
+     </form>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var exam = window.__DATA__ && window.__DATA__.exam ? window.__DATA__.exam : null;
+          var questions = window.__DATA__ && window.__DATA__.questions ? window.__DATA__.questions : [];
+
+          if (exam) {
+               document.getElementById('form-title').textContent = 'ویرایش آزمون: ' + (exam.title || '');
+               document.getElementById('title').value = exam.title || '';
+               document.getElementById('description').value = exam.description || '';
+               document.getElementById('duration').value = exam.duration || 30;
+          }
+
+          var form = document.getElementById('exam-form');
+          if (form) {
+               if (exam) {
+                    form.action = '{{ base_url }}/teacher/exam/edit/' + exam.id;
+               } else {
+                    form.action = '{{ base_url }}/teacher/exam/add';
+               }
+          }
+
+          var container = document.getElementById('questions-checkboxes');
+          if (container && questions.length > 0) {
+               var html = '';
+               var selectedIds = {};
+               if (exam && exam.question_ids) {
+                    for (var k = 0; k < exam.question_ids.length; k++) {
+                         selectedIds[exam.question_ids[k]] = true;
+                    }
+               }
+               for (var i = 0; i < questions.length; i++) {
+                    var q = questions[i];
+                    var checked = selectedIds[q.id] ? 'checked' : '';
+                    html += '<p><label><input type="checkbox" name="question_ids" value="' + q.id + '" ' + checked + '> ' + (q.question_text || '') + '</label></p>';
+               }
+               container.innerHTML = html;
+          }
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

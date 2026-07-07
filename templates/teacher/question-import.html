@@ -1,0 +1,31 @@
+<div id="teacher-question-import-page">
+     <h2>بارگذاری سوالات از JSON</h2>
+     <form id="import-form" method="POST">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+               <textarea class="mdl-textfield__input" id="questions_json" name="questions_json" rows="10" required></textarea>
+               <label class="mdl-textfield__label" for="questions_json">داده‌های JSON</label>
+          </div>
+          <p><button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">بارگذاری</button>
+          <a href="#" data-link="{{ base_url }}/teacher/question" class="mdl-button mdl-js-button">بازگشت</a></p>
+     </form>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+
+          var form = document.getElementById('import-form');
+          if (form) {
+               form.action = '{{ base_url }}/teacher/question/import';
+          }
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

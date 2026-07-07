@@ -2,26 +2,31 @@
 import sqlite3
 import settings
 
-def handle(data):
-     if not settings.DB_PATH.exists():
-          return "دیتابیس یافت نشد."
-
-     conn = sqlite3.connect(str(settings.DB_PATH))
-     cursor = conn.cursor()
+def handle(data, teacher_id):
      try:
           title = data.get('title', [''])[0].strip()
           description = data.get('description', [''])[0].strip()
-          start_time = data.get('start_time', [''])[0].strip()
-          duration = data.get('duration', ['0'])[0].strip()
-
-          if not title:
-               return "عنوان آزمون الزامی است."
-
-          sql = '''INSERT INTO TBL_exams (title, description, start_time, duration) VALUES (?, ?, ?, ?)'''
-          cursor.execute(sql, (title, description, start_time, duration))
-          conn.commit()
-          return "آزمون با موفقیت ثبت شد."
+          duration = data.get('duration', ['30'])[0]
+          is_random = 1 if data.get('is_random', ['0'])[0] == 'true' else 0
+          question_ids = data.get('question_ids', [])
+          total = len(question_ids)
+          if not title or total == 0:
+               return "عنوان و حداقل یک سوال الزامی است"
+          dbc = sqlite3.connect(settings.DB_PATH)
+          cursor = dbc.cursor()
+          cursor.execute('''
+               INSERT INTO exams (teacher_id, title, description, duration, total_questions, is_random)
+               VALUES (?, ?, ?, ?, ?, ?)
+          ''', (teacher_id, title, description, int(duration), total, is_random))
+          exam_id = cursor.lastrowid
+          for idx, qid in enumerate(question_ids):
+               if qid.isdigit():
+                    cursor.execute('''
+                         INSERT INTO exam_questions (exam_id, question_id, order_num)
+                         VALUES (?, ?, ?)
+                    ''', (exam_id, int(qid), idx))
+          dbc.commit()
+          dbc.close()
+          return "آزمون ساخته شد"
      except Exception as e:
           return f"خطا: {e}"
-     finally:
-          conn.close()

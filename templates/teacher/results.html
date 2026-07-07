@@ -1,0 +1,73 @@
+<div id="teacher-results-page">
+     <h2>نتایج آزمون</h2>
+     <div id="stats-container"></div>
+     <h4>سوالات پرخطا:</h4>
+     <div id="difficult-questions-container"></div>
+     <h4>لیست نمرات:</h4>
+     <div id="results-table-container">
+          <table style="width:100%; border-collapse:collapse;">
+               <thead>
+                    <tr>
+                         <th>دانشجو</th>
+                         <th>نمره</th>
+                         <th>زمان</th>
+                    </tr>
+               </thead>
+               <tbody id="results-tbody"></tbody>
+          </table>
+     </div>
+     <a href="#" data-link="{{ base_url }}/teacher/exam" class="mdl-button mdl-js-button">بازگشت</a>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var results = window.__DATA__ && window.__DATA__.results ? window.__DATA__.results : [];
+          var stats = window.__DATA__ && window.__DATA__.stats ? window.__DATA__.stats : {};
+
+          var statsContainer = document.getElementById('stats-container');
+          if (statsContainer) {
+               statsContainer.innerHTML = '<p>میانگین: ' + (stats.average_score || 0) + '% | بیشترین: ' + (stats.highest_score || 0) + '% | کمترین: ' + (stats.lowest_score || 0) + '% | تعداد شرکت‌کنندگان: ' + (stats.total_participants || 0) + '</p>';
+          }
+
+          var diffContainer = document.getElementById('difficult-questions-container');
+          if (diffContainer && stats.difficult_questions) {
+               var html = '<ul>';
+               for (var i = 0; i < stats.difficult_questions.length; i++) {
+                    var q = stats.difficult_questions[i];
+                    html += '<li>' + (q.text || '') + ' - ' + (q.wrong || 0) + ' غلط از ' + (q.total || 0) + '</li>';
+               }
+               if (stats.difficult_questions.length === 0) {
+                    html += '<li>هنوز داده‌ای برای تحلیل وجود ندارد</li>';
+               }
+               html += '</ul>';
+               diffContainer.innerHTML = html;
+          }
+
+          var tbody = document.getElementById('results-tbody');
+          if (tbody) {
+               var html = '';
+               for (var j = 0; j < results.length; j++) {
+                    var r = results[j];
+                    html += '<tr>';
+                    html += '<td>' + (r.firstname || '') + ' ' + (r.lastname || '') + '</td>';
+                    html += '<td>' + (r.score || 0) + '%</td>';
+                    html += '<td>' + (r.submitted_at || '') + '</td>';
+                    html += '</tr>';
+               }
+               if (results.length === 0) {
+                    html = '<tr><td colspan="3" style="text-align:center;">هیچ نمره‌ای ثبت نشده است</td></tr>';
+               }
+               tbody.innerHTML = html;
+          }
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var k = 0; k < links.length; k++) {
+               var link = links[k];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

@@ -1,18 +1,19 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-     <meta charset="UTF-8">
-     <title>403 - دسترسی ممنوع</title>
-     <style>
-          body {font-family: Tahoma; text-align: center; padding: 80px; background: #f8f9fa;}
-          h1 {font-size: 120px; color: #e74c3c; margin: 0;}
-          p {font-size: 22px; color: #555;}
-          a {color: #3498db; text-decoration: none; font-size: 18px;}
-     </style>
-</head>
-<body>
-     <h1>403</h1>
-     <p>شما اجازه دسترسی به این بخش را ندارید.</p>
-     <a href="/">صفحه اصلی</a>
-</body>
-</html>
+<div style="text-align:center; padding:60px;">
+     <i class="material-icons" style="font-size:80px; color:#f44336;">block</i>
+     <h2>۴۰۳ - دسترسی ممنوع</h2>
+     <a href="#" data-link="{{ base_url }}/dashboard" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">داشبورد</a>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

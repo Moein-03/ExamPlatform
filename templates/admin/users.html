@@ -1,0 +1,55 @@
+<div id="admin-users-page">
+     <h2>مدیریت کاربران</h2>
+     <div id="users-table-container">
+          <table style="width:100%; border-collapse:collapse;">
+               <thead>
+                    <tr>
+                         <th>نام</th>
+                         <th>نام خانوادگی</th>
+                         <th>نام کاربری</th>
+                         <th>نقش</th>
+                         <th>عملیات</th>
+                    </tr>
+               </thead>
+               <tbody id="users-tbody"></tbody>
+          </table>
+     </div>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var users = window.__DATA__ && window.__DATA__.users ? window.__DATA__.users : [];
+
+          var tbody = document.getElementById('users-tbody');
+          if (!tbody) return;
+
+          var roleMap = {0: 'دانشجو', 1: 'استاد', 2: 'ادمین'};
+          var html = '';
+          for (var i = 0; i < users.length; i++) {
+               var u = users[i];
+               html += '<tr>';
+               html += '<td>' + (u.firstname || '') + '</td>';
+               html += '<td>' + (u.lastname || '') + '</td>';
+               html += '<td>' + (u.username || '') + '</td>';
+               html += '<td>' + (roleMap[u.role] || 'نامشخص') + '</td>';
+               html += '<td><a href="' + base_url + '/admin/user/' + u.id + '" class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">edit</i></a></td>';
+               html += '</tr>';
+          }
+
+          if (users.length === 0) {
+               html = '<tr><td colspan="5" style="text-align:center;">هیچ کاربری یافت نشد</td></tr>';
+          }
+
+          tbody.innerHTML = html;
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>
