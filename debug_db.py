@@ -3,34 +3,36 @@ import sqlite3
 import settings
 
 def debug():
-    db = settings.DB_PATH
-    print(f"📂 دیتابیس: {db}")
-    if not db.exists():
+    db_path = settings.DB_PATH
+    print(f"📂 دیتابیس: {db_path}")
+
+    if not db_path.exists():
         print("❌ فایل دیتابیس وجود ندارد!")
         return
-    
-    conn = sqlite3.connect(str(db))
-    cursor = conn.cursor()
-    
-    # بررسی ساختار جدول exams
-    cursor.execute("PRAGMA table_info(TBL_exams)")
-    columns = cursor.fetchall()
-    print("📋 ستون‌های جدول TBL_exams:")
-    for col in columns:
-        print(f"   {col[1]} ({col[2]})")
-    
-    # تعداد رکوردها
-    cursor.execute("SELECT COUNT(*) FROM TBL_exams")
-    count = cursor.fetchone()[0]
-    print(f"📊 تعداد آزمون‌ها: {count}")
-    
-    if count > 0:
-        cursor.execute("SELECT * FROM TBL_exams")
-        rows = cursor.fetchall()
-        for row in rows:
-            print(f"   {row}")
-    
-    conn.close()
+
+    dbc = sqlite3.connect(db_path)
+    cursor = dbc.cursor()
+
+    # لیست همه جدول‌ها
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    tables = cursor.fetchall()
+    print("📋 جدول‌های موجود:")
+    for table in tables:
+        print(f"   - {table[0]}")
+
+    # بررسی جدول users
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    if cursor.fetchone():
+        print("\n✅ جدول users وجود دارد")
+        cursor.execute("SELECT id, firstname, lastname, username, role FROM users")
+        users = cursor.fetchall()
+        print(f"📊 تعداد کاربران: {len(users)}")
+        for user in users:
+            print(f"   {user}")
+    else:
+        print("\n❌ جدول users وجود ندارد!")
+
+    dbc.close()
 
 if __name__ == "__main__":
     debug()

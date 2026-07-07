@@ -9,3 +9,4 @@ STATIC_DIR = BASE_DIR / "static"
 STATIC_URL_PREFIX = "/static/"
 
 BASE_URL = '/ExamPlatform'
+

@@ -4,15 +4,16 @@ import os
 import settings
 
 def setup_database():
+    # اگر دیتابیس وجود دارد، حذفش کن تا از نو ساخته شود
     if os.path.exists(settings.DB_PATH):
-        print(f"[!] دیتابیس {settings.DB_NAME} از قبل وجود دارد.")
-        return
+        print(f"[!] دیتابیس {settings.DB_NAME} از قبل وجود دارد. حذف می‌شود...")
+        os.remove(settings.DB_PATH)
 
-    print(f"[*] ساخت دیتابیس: {settings.DB_NAME}")
+    print(f"[*] ساخت دیتابیس جدید: {settings.DB_NAME}")
     dbc = sqlite3.connect(settings.DB_PATH)
     cursor = dbc.cursor()
 
-    # users
+    # جدول users
     cursor.execute('''
         CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +27,7 @@ def setup_database():
         )
     ''')
 
-    # sessions
+    # جدول sessions
     cursor.execute('''
         CREATE TABLE sessions (
             id TEXT PRIMARY KEY,
@@ -37,7 +38,7 @@ def setup_database():
         )
     ''')
 
-    # questions
+    # جدول questions
     cursor.execute('''
         CREATE TABLE questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +53,7 @@ def setup_database():
         )
     ''')
 
-    # exams
+    # جدول exams
     cursor.execute('''
         CREATE TABLE exams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +69,7 @@ def setup_database():
         )
     ''')
 
-    # exam_questions
+    # جدول exam_questions
     cursor.execute('''
         CREATE TABLE exam_questions (
             exam_id INTEGER NOT NULL,
@@ -80,7 +81,7 @@ def setup_database():
         )
     ''')
 
-    # exam_participants
+    # جدول exam_participants
     cursor.execute('''
         CREATE TABLE exam_participants (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,7 +97,7 @@ def setup_database():
         )
     ''')
 
-    # exam_answers
+    # جدول exam_answers
     cursor.execute('''
         CREATE TABLE exam_answers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,7 +111,21 @@ def setup_database():
         )
     ''')
 
-    # admin user
+    # جدول exam_reports (اختیاری)
+    cursor.execute('''
+        CREATE TABLE exam_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            exam_id INTEGER NOT NULL,
+            total_participants INTEGER DEFAULT 0,
+            average_score REAL DEFAULT 0,
+            highest_score REAL DEFAULT 0,
+            lowest_score REAL DEFAULT 0,
+            generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (exam_id) REFERENCES exams(id)
+        )
+    ''')
+
+    # ایجاد کاربر ادمین پیش‌فرض
     cursor.execute('''
         INSERT INTO users (firstname, lastname, username, password, role)
         VALUES ('Admin', 'System', 'admin', 'admin123', 2)
@@ -118,5 +133,8 @@ def setup_database():
 
     dbc.commit()
     dbc.close()
-    print("[+] دیتابیس ساخته شد.")
-    print("[+] ادمین: username='admin', password='admin123'")
+    print("[+] دیتابیس با موفقیت ساخته شد.")
+    print("[+] کاربر ادمین پیش‌فرض: username='admin', password='admin123'")
+
+if __name__ == '__main__':
+    setup_database()
