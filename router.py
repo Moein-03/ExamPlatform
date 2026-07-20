@@ -53,12 +53,9 @@ def route(path, method, data, headers):
                if not user_id:
                     return response.redirect("/login")
                
-               # ادمین: لیست تمام آزمون‌ها را نشان بده
                if auth.is_admin(user_id):
                     exams = exam_get_all.handle(None)
-                    # تبدیل به JSON
                     exams_json = json.dumps(exams, ensure_ascii=False)
-                    
                     html = response.render_master("admin/exams.html", {
                          'exams': exams,
                          'exams_json': exams_json,
@@ -66,11 +63,9 @@ def route(path, method, data, headers):
                     }, "لیست آزمون‌ها")
                     return response.serve_html(html)
                
-               # استاد: به صفحه مدیریت آزمون‌های خودش هدایت شود
                if auth.is_teacher(user_id):
                     return response.redirect("/teacher/exam")
                
-               # دانشجو: به صفحه آزمون‌های خودش هدایت شود
                if auth.is_student(user_id):
                     return response.redirect("/student/exams")
                
@@ -119,7 +114,7 @@ def route(path, method, data, headers):
                          </form>
                     """)
 
-          # ---------- ثبت‌نام (POST) ----------
+          # ---------- ثبت‌ نام (POST) ----------
           case ("/register", "POST"):
                result = user_add.handle(data)
                if "موفقیت" in result:
@@ -304,7 +299,14 @@ def route(path, method, data, headers):
                if not exam or not exam.get('is_published'):
                     return response._404()
                questions = question_get_by_exam.handle(item_id)
-               context = {'exam': exam, 'questions': questions, 'student_id': user_id}
+
+               import json
+               questions_json = json.dumps(questions, ensure_ascii=False)
+               context = {
+                    'exam': exam,
+                    'questions_json': questions_json,
+                    'base_url': settings.BASE_URL
+               }
                html = response.render_master("student/exam-take.html", context, exam.get('title', 'آزمون'))
                return response.serve_html(html)
 
@@ -321,7 +323,15 @@ def route(path, method, data, headers):
                     return response._403()
                feedback = exam_results.handle(item_id, user_id)
                stats = report_stats.handle(item_id)
-               context = {'feedback': feedback, 'stats': stats}
+               import json
+               feedback_json = json.dumps(feedback, ensure_ascii=False)
+               stats_json = json.dumps(stats, ensure_ascii=False)
+               
+               context = {
+                    'feedback_json': feedback_json,
+                    'stats_json': stats_json,
+                    'base_url': settings.BASE_URL
+               }
                html = response.render_master("student/exam-feedback.html", context, "بازخورد آزمون")
                return response.serve_html(html)
 

@@ -1,60 +1,65 @@
-<div id="teacher-questions-page">
-     <h2>بانک سوالات</h2>
-     <a href="#" data-link="{{ base_url }}/teacher/question/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">+ سوال جدید</a>
-     <a href="#" data-link="{{ base_url }}/teacher/question/import" class="mdl-button mdl-js-button mdl-button--raised">بارگذاری JSON</a>
-     <a href="#" data-link="{{ base_url }}/teacher/question/export" class="mdl-button mdl-js-button mdl-button--raised">دانلود JSON</a>
-     <div id="questions-table-container" style="margin-top:20px;">
-          <table style="width:100%; border-collapse:collapse;">
-               <thead>
-                    <tr>
-                         <th>متن سوال</th>
-                         <th>نوع</th>
-                         <th>پاسخ صحیح</th>
-                         <th>عملیات</th>
-                    </tr>
-               </thead>
-               <tbody id="questions-tbody"></tbody>
-          </table>
+{% extends "base.html" %}
+
+{% block title %}مدیریت سوالات{% endblock %}
+
+{% block content %}
+<div class="mdl-grid">
+     <div class="mdl-cell mdl-cell--12-col">
+          <div class="mdl-card mdl-shadow--2dp" style="width: 100%;">
+               <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">بانک سوالات من</h2>
+               </div>
+               <div class="mdl-card__supporting-text">
+                    <a href="{{ base_url }}/teacher/question/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                         سوال جدید
+                    </a>
+                    <a href="{{ base_url }}/teacher/question/import" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                         وارد کردن سوالات
+                    </a>
+                    <a href="{{ base_url }}/teacher/question/export" class="mdl-button mdl-js-button mdl-button--raised">
+                         خروجی سوالات
+                    </a>
+               </div>
+               <div class="mdl-card__supporting-text">
+                    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="width: 100%;">
+                         <thead>
+                         <tr>
+                              <th class="mdl-data-table__cell--non-numeric">متن سوال</th>
+                              <th>نوع</th>
+                              <th>نمره</th>
+                              <th>عملیات</th>
+                         </tr>
+                         </thead>
+                         <tbody>
+                         {% for q in questions %}
+                         <tr>
+                              <td class="mdl-data-table__cell--non-numeric">{{ q.question_text }}</td>
+                              <td>
+                                   {% if q.question_type == 'single' %}تستی (یک گزینه)
+                                   {% elif q.question_type == 'multiple' %}تستی (چند گزینه)
+                                   {% else %}تشریحی{% endif %}
+                              </td>
+                              <td>{{ q.score }}</td>
+                              <td>
+                                   <a href="{{ base_url }}/teacher/question/edit/{{ q.id }}" class="mdl-button mdl-js-button mdl-button--icon">
+                                        <i class="material-icons">edit</i>
+                                   </a>
+                                   <form method="POST" action="{{ base_url }}/teacher/question/delete/{{ q.id }}" style="display: inline;">
+                                        <button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color: red;" onclick="return confirm('آیا از حذف این سوال اطمینان دارید؟')">
+                                             <i class="material-icons">delete</i>
+                                        </button>
+                                   </form>
+                              </td>
+                         </tr>
+                         {% else %}
+                         <tr>
+                              <td colspan="4" style="text-align: center;">هیچ سوالی یافت نشد.</td>
+                         </tr>
+                         {% endfor %}
+                         </tbody>
+                    </table>
+               </div>
+          </div>
      </div>
 </div>
-
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-          var questions = window.__DATA__ && window.__DATA__.questions ? window.__DATA__.questions : [];
-
-          var tbody = document.getElementById('questions-tbody');
-          if (!tbody) return;
-
-          var html = '';
-          for (var i = 0; i < questions.length; i++) {
-               var q = questions[i];
-               var type = q.question_type === 'multiple_choice' ? 'چندگزینه‌ای' : 'جاخالی';
-               html += '<tr>';
-               html += '<td>' + (q.question_text || '') + '</td>';
-               html += '<td>' + type + '</td>';
-               html += '<td>' + (q.correct_answer || '') + '</td>';
-               html += '<td>';
-               html += '<form method="POST" action="' + base_url + '/teacher/question/delete/' + q.id + '" style="display:inline;">';
-               html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color:red;"><i class="material-icons">delete</i></button>';
-               html += '</form>';
-               html += '</td>';
-               html += '</tr>';
-          }
-
-          if (questions.length === 0) {
-               html = '<tr><td colspan="4" style="text-align:center;">هیچ سوالی یافت نشد</td></tr>';
-          }
-
-          tbody.innerHTML = html;
-
-          var links = document.querySelectorAll('[data-link]');
-          for (var j = 0; j < links.length; j++) {
-               var link = links[j];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
-               }
-          }
-     })();
-</script>
+{% endblock %}

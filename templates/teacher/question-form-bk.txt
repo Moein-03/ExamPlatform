@@ -1,0 +1,42 @@
+<div id="teacher-question-form-page">
+    <h2>افزودن سوال جدید</h2>
+    <form id="question-form" method="POST">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+            <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
+            <label class="mdl-textfield__label" for="question_text">متن سوال</label>
+        </div>
+        <p>نوع سوال:</p>
+        <p><label><input type="radio" name="question_type" value="multiple_choice" checked> چندگزینه‌ای</label></p>
+        <p><label><input type="radio" name="question_type" value="fill_blank"> جاخالی</label></p>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+            <input class="mdl-textfield__input" type="text" id="correct_answer" name="correct_answer" required>
+            <label class="mdl-textfield__label" for="correct_answer">پاسخ صحیح</label>
+        </div>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+            <input class="mdl-textfield__input" type="number" id="difficulty" name="difficulty" value="1">
+            <label class="mdl-textfield__label" for="difficulty">سطح دشواری (1-5)</label>
+        </div>
+        <p><button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره</button>
+        <a href="#" data-link="{{ base_url }}/teacher/question" class="mdl-button mdl-js-button">بازگشت</a></p>
+    </form>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+
+          var form = document.getElementById('question-form');
+          if (form) {
+               form.action = '{{ base_url }}/teacher/question/add';
+          }
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+     })();
+</script>

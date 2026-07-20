@@ -1,49 +1,129 @@
-<div id="exam-take-page">
-     <h2 id="exam-title"></h2>
-     <p id="exam-info"></p>
-     <form id="exam-form" method="POST">
-          <div id="questions-container"></div>
-          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ثبت پاسخ‌ها</button>
-     </form>
-</div>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>{{ exam.title }}</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; padding: 20px; }
+          .question-container { margin-bottom: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; }
+          .timer-chip { background-color: #ff5252; color: white; font-size: 1.2em; padding: 8px 16px; border-radius: 16px; display: inline-block; }
+          .mdl-card { width: 100%; }
+          .option-label { display: block; padding: 8px 0; }
+     </style>
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">{{ exam.title }}</h2>
+                         <div style="margin-right: auto;">
+                         <span class="timer-chip">
+                              <span id="time-display">00:00</span>
+                         </span>
+                         </div>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                         <form id="exam-form" method="POST" action="{{ base_url }}/student/exam/submit/{{ exam.id }}">
+                         <div id="questions-container"></div>
+                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="submit-exam-btn">
+                              ارسال پاسخ‌ها
+                         </button>
+                         </form>
+                    </div>
+               </div>
+          </div>
+     </div>
 
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-          var exam = window.__DATA__ && window.__DATA__.exam ? window.__DATA__.exam : null;
-          var questions = window.__DATA__ && window.__DATA__.questions ? window.__DATA__.questions : [];
+     <script>
+          // ===== دریافت داده‌ها به صورت رشته و تبدیل =====
+          var questionsDataStr = '{{ questions_json }}';
+          var durationStr = '{{ exam.duration }}';
+          var examIdStr = '{{ exam.id }}';
+          var baseUrlStr = '{{ base_url }}';
 
-          if (!exam) return;
+          // تبدیل به نوع درست
+          var questionsData = JSON.parse(questionsDataStr);
+          var duration = parseInt(durationStr, 10);
+          var examId = parseInt(examIdStr, 10);
+          var baseUrl = baseUrlStr;
 
-          document.getElementById('exam-title').textContent = exam.title || 'آزمون';
-          document.getElementById('exam-info').textContent = 'تعداد سوالات: ' + questions.length + ' | زمان: ' + (exam.duration || 0) + ' دقیقه';
-
-          var form = document.getElementById('exam-form');
-          if (form) {
-               form.action = base_url + '/student/exam/submit/' + exam.id;
-          }
-
-          var container = document.getElementById('questions-container');
-          if (!container) return;
-
-          var html = '';
-          for (var i = 0; i < questions.length; i++) {
-               var q = questions[i];
-               html += '<div style="background:#f9f9f9; padding:15px; margin:15px 0; border-radius:8px;">';
-               html += '<p><strong>' + (i + 1) + '. ' + (q.question_text || '') + '</strong></p>';
-
-               if (q.question_type === 'multiple_choice') {
-                    var opts = q.options || [];
-                    for (var j = 0; j < opts.length; j++) {
-                         html += '<p><label><input type="radio" name="question_' + q.id + '" value="' + opts[j] + '"> ' + opts[j] + '</label></p>';
+          // ===== ساخت HTML سوالات =====
+          function renderQuestions(questions) {
+               var container = document.getElementById('questions-container');
+               var html = '';
+               
+               for (var i = 0; i < questions.length; i++) {
+                    var q = questions[i];
+                    var qNum = i + 1;
+                    html += '<div class="question-container">';
+                    html += '<h4>سوال ' + qNum + ': ' + (q.question_text || '') + '</h4>';
+                    html += '<p><small>نمره: ' + (q.score || 0) + '</small></p>';
+                    
+                    if (q.question_type === 'single' || q.question_type === 'multiple') {
+                         var inputType = (q.question_type === 'single') ? 'radio' : 'checkbox';
+                         var answers = q.answers || [];
+                         
+                         for (var j = 0; j < answers.length; j++) {
+                         var ans = answers[j];
+                         html += '<label class="option-label" for="q' + q.id + '_' + ans.id + '">';
+                         html += '<input type="' + inputType + '" id="q' + q.id + '_' + ans.id + '" ';
+                         html += 'name="question_' + q.id + '" value="' + ans.id + '" ';
+                         html += 'class="mdl-radio__button">';
+                         html += '<span>' + ans.answer_text + '</span>';
+                         html += '</label>';
+                         }
+                    } else {
+                         html += '<div class="mdl-textfield mdl-js-textfield" style="width: 100%;">';
+                         html += '<textarea class="mdl-textfield__input" id="q' + q.id + '" name="question_' + q.id + '" rows="3"></textarea>';
+                         html += '<label class="mdl-textfield__label" for="q' + q.id + '">پاسخ خود را وارد کنید...</label>';
+                         html += '</div>';
                     }
-               } else {
-                    html += '<input type="text" name="question_' + q.id + '" placeholder="پاسخ خود را وارد کنید..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">';
+                    
+                    html += '</div>';
                }
-
-               html += '</div>';
+               
+               container.innerHTML = html;
           }
 
-          container.innerHTML = html;
-     })();
-</script>
+          // ===== تایمر =====
+          function startTimer(totalSeconds) {
+               var timeLeft = totalSeconds;
+               var display = document.getElementById('time-display');
+               
+               var timerInterval = setInterval(function() {
+                    var minutes = Math.floor(timeLeft / 60);
+                    var seconds = timeLeft % 60;
+                    display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+                    
+                    if (timeLeft <= 0) {
+                         clearInterval(timerInterval);
+                         alert('زمان شما به پایان رسید!');
+                         document.getElementById('exam-form').submit();
+                    }
+                    timeLeft--;
+               }, 1000);
+          }
+
+          // ===== بارگذاری صفحه =====
+          window.onload = function() {
+               renderQuestions(questionsData);
+               startTimer(duration * 60);
+               
+               window.addEventListener('beforeunload', function(e) {
+                    e.preventDefault();
+                    e.returnValue = '';
+               });
+               
+               if (window.componentHandler) {
+                    window.componentHandler.upgradeAllRegistered();
+               }
+          };
+     </script>
+     
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<div id="exam-take-page">
+     <h2 id="exam-title"></h2>
+     <p id="exam-info"></p>
+     <form id="exam-form" method="POST">
+          <div id="questions-container"></div>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ثبت پاسخ‌ها</button>
+     </form>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var exam = window.__DATA__ && window.__DATA__.exam ? window.__DATA__.exam : null;
+          var questions = window.__DATA__ && window.__DATA__.questions ? window.__DATA__.questions : [];
+
+          if (!exam) return;
+
+          document.getElementById('exam-title').textContent = exam.title || 'آزمون';
+          document.getElementById('exam-info').textContent = 'تعداد سوالات: ' + questions.length + ' | زمان: ' + (exam.duration || 0) + ' دقیقه';
+
+          var form = document.getElementById('exam-form');
+          if (form) {
+               form.action = base_url + '/student/exam/submit/' + exam.id;
+          }
+
+          var container = document.getElementById('questions-container');
+          if (!container) return;
+
+          var html = '';
+          for (var i = 0; i < questions.length; i++) {
+               var q = questions[i];
+               html += '<div style="background:#f9f9f9; padding:15px; margin:15px 0; border-radius:8px;">';
+               html += '<p><strong>' + (i + 1) + '. ' + (q.question_text || '') + '</strong></p>';
+
+               if (q.question_type === 'multiple_choice') {
+                    var opts = q.options || [];
+                    for (var j = 0; j < opts.length; j++) {
+                         html += '<p><label><input type="radio" name="question_' + q.id + '" value="' + opts[j] + '"> ' + opts[j] + '</label></p>';
+                    }
+               } else {
+                    html += '<input type="text" name="question_' + q.id + '" placeholder="پاسخ خود را وارد کنید..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">';
+               }
+
+               html += '</div>';
+          }
+
+          container.innerHTML = html;
+     })();
+</script>

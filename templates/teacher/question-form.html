@@ -1,42 +1,37 @@
-<div id="teacher-question-form-page">
-    <h2>افزودن سوال جدید</h2>
-    <form id="question-form" method="POST">
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
-            <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
-            <label class="mdl-textfield__label" for="question_text">متن سوال</label>
+{% extends "base.html" %}
+
+{% block title %}افزودن سوال جدید{% endblock %}
+
+{% block content %}
+<div class="mdl-grid">
+    <div class="mdl-cell mdl-cell--8-col mdl-cell--2-offset">
+        <div class="mdl-card mdl-shadow--2dp">
+            <div class="mdl-card__title">
+                <h2 class="mdl-card__title-text">سوال جدید</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+                <form method="POST" action="{{ base_url }}/teacher/question/add">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                        <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
+                        <label class="mdl-textfield__label" for="question_text">متن سوال</label>
+                    </div>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                        <select class="mdl-textfield__input" id="question_type" name="question_type">
+                            <option value="single">تستی (یک گزینه)</option>
+                            <option value="multiple">تستی (چند گزینه)</option>
+                            <option value="descriptive">تشریحی</option>
+                        </select>
+                        <label class="mdl-textfield__label" for="question_type">نوع سوال</label>
+                    </div>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                        <input class="mdl-textfield__input" type="number" id="score" name="score" value="1" step="0.5" min="0.5">
+                        <label class="mdl-textfield__label" for="score">نمره</label>
+                    </div>
+                    <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره سوال</button>
+                    <a href="{{ base_url }}/teacher/question" class="mdl-button mdl-js-button mdl-button--raised">انصراف</a>
+                </form>
+            </div>
         </div>
-        <p>نوع سوال:</p>
-        <p><label><input type="radio" name="question_type" value="multiple_choice" checked> چندگزینه‌ای</label></p>
-        <p><label><input type="radio" name="question_type" value="fill_blank"> جاخالی</label></p>
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
-            <input class="mdl-textfield__input" type="text" id="correct_answer" name="correct_answer" required>
-            <label class="mdl-textfield__label" for="correct_answer">پاسخ صحیح</label>
-        </div>
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
-            <input class="mdl-textfield__input" type="number" id="difficulty" name="difficulty" value="1">
-            <label class="mdl-textfield__label" for="difficulty">سطح دشواری (1-5)</label>
-        </div>
-        <p><button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره</button>
-        <a href="#" data-link="{{ base_url }}/teacher/question" class="mdl-button mdl-js-button">بازگشت</a></p>
-    </form>
+    </div>
 </div>
-
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-
-          var form = document.getElementById('question-form');
-          if (form) {
-               form.action = '{{ base_url }}/teacher/question/add';
-          }
-
-          var links = document.querySelectorAll('[data-link]');
-          for (var i = 0; i < links.length; i++) {
-               var link = links[i];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
-               }
-          }
-     })();
-</script>
+{% endblock %}

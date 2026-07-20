@@ -1,25 +1,47 @@
 # controllers/question_get_all.py
 import sqlite3
 import settings
-import json
 
-def handle(teacher_id=None):
-     dbc = sqlite3.connect(settings.DB_PATH)
-     dbc.row_factory = sqlite3.Row
-     cursor = dbc.cursor()
-     if teacher_id:
-          cursor.execute('SELECT * FROM questions WHERE teacher_id = ? ORDER BY created_at DESC', (teacher_id,))
+def handle(teacher_id=None, exam_id=None):
+     """
+     دریافت لیست سوالات
+     - اگر exam_id داده شود، سوالات آن آزمون را برمی‌گرداند
+     - اگر teacher_id داده شود، سوالات آزمون‌های آن استاد را برمی‌گرداند
+     """
+     conn = sqlite3.connect(str(settings.DB_PATH))
+     conn.row_factory = sqlite3.Row
+     cursor = conn.cursor()
+     
+     if exam_id:
+          cursor.execute('''
+               SELECT q.*, 
+                    (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count
+               FROM TBL_questions q
+               WHERE q.exam_id = ?
+               ORDER BY q.id ASC
+          ''', (exam_id,))
+     elif teacher_id:
+          cursor.execute('''
+               SELECT q.*, 
+                    (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count,
+                    e.title as exam_title
+               FROM TBL_questions q
+               JOIN TBL_exams e ON q.exam_id = e.id
+               WHERE e.teacher_id = ?
+               ORDER BY q.id DESC
+          ''', (teacher_id,))
      else:
-          cursor.execute('SELECT * FROM questions ORDER BY created_at DESC')
+          cursor.execute('''
+               SELECT q.*, 
+                    (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count,
+                    e.title as exam_title,
+                    u.fullname as teacher_name
+               FROM TBL_questions q
+               JOIN TBL_exams e ON q.exam_id = e.id
+               LEFT JOIN TBL_users u ON e.teacher_id = u.id
+               ORDER BY q.id DESC
+          ''')
+     
      rows = cursor.fetchall()
-     dbc.close()
-     results = []
-     for row in rows:
-          item = dict(row)
-          if item.get('options'):
-               try:
-                    item['options'] = json.loads(item['options'])
-               except:
-                    item['options'] = []
-          results.append(item)
-     return results
+     conn.close()
+     return [dict(row) for row in rows]
