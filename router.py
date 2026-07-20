@@ -1,6 +1,7 @@
 # router.py
 from core import auth, response, cookie
 import settings
+import json
 import db_setup
 from controllers import (
      user_add, user_login, user_get_one, user_get_all, user_update_role,
@@ -51,12 +52,28 @@ def route(path, method, data, headers):
           case ("/exams", "GET"):
                if not user_id:
                     return response.redirect("/login")
+               
+               # ادمین: لیست تمام آزمون‌ها را نشان بده
                if auth.is_admin(user_id):
-                    return response.redirect("/admin/users")
+                    exams = exam_get_all.handle(None)
+                    # تبدیل به JSON
+                    exams_json = json.dumps(exams, ensure_ascii=False)
+                    
+                    html = response.render_master("admin/exams.html", {
+                         'exams': exams,
+                         'exams_json': exams_json,
+                         'base_url': settings.BASE_URL
+                    }, "لیست آزمون‌ها")
+                    return response.serve_html(html)
+               
+               # استاد: به صفحه مدیریت آزمون‌های خودش هدایت شود
                if auth.is_teacher(user_id):
                     return response.redirect("/teacher/exam")
+               
+               # دانشجو: به صفحه آزمون‌های خودش هدایت شود
                if auth.is_student(user_id):
                     return response.redirect("/student/exams")
+               
                return response._403()
 
           # ---------- ورود (GET) ----------
@@ -166,13 +183,13 @@ def route(path, method, data, headers):
                return response.serve_html(html)
 
           case ("/teacher/question/add", "GET"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                html = response.render_master("teacher/question-form.html", title="افزودن سوال")
                return response.serve_html(html)
 
           case ("/teacher/question/add", "POST"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                result = question_add.handle(data, user_id)
                if "موفقیت" in result:
@@ -180,66 +197,44 @@ def route(path, method, data, headers):
                return response._200(result)
 
           case ("/teacher/question/delete", "POST") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                question_delete.handle(item_id, user_id)
                return response.redirect("/teacher/question")
 
           case ("/teacher/question/import", "GET"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                html = response.render_master("teacher/question-import.html", title="بارگذاری سوالات")
                return response.serve_html(html)
 
           case ("/teacher/question/import", "POST"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                question_import.handle(data, user_id)
                return response.redirect("/teacher/question")
 
           case ("/teacher/question/export", "GET"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                return question_export.handle(user_id)
 
-          # آزمون‌ها
-          case ("/exams", "GET"):
-               if not user_id:
-                    return response.redirect("/login")
-               
-               # اگر کاربر ادمین است: لیست تمام آزمون‌ها را نشان بده
-               if auth.is_admin(user_id):
-                    exams = exam_get_all.handle(None)  # یا handle() بدون فیلتر
-                    html = response.render_master("exams.html", {'exams': exams}, "لیست آزمون‌ها")
-                    return response.serve_html(html)
-               
-               # اگر کاربر استاد است: به صفحه مدیریت آزمون‌های خودش هدایت شود
-               if auth.is_teacher(user_id):
-                    return response.redirect("/teacher/exam")
-               
-               # اگر کاربر دانشجو است: به صفحه آزمون‌های خودش هدایت شود
-               if auth.is_student(user_id):
-                    return response.redirect("/student/exams")
-               
-               # در غیر این صورت (نقش نامعتبر) دسترسی ممنوع
-               return response._403()
-
           case ("/teacher/exam", "GET"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                exams = exam_get_all.handle(user_id)
                html = response.render_master("teacher/exams.html", {'exams': exams}, "مدیریت آزمون‌ها")
                return response.serve_html(html)
 
           case ("/teacher/exam/add", "GET"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                questions = question_get_all.handle(user_id)
                html = response.render_master("teacher/exam-form.html", {'questions': questions}, "ساخت آزمون جدید")
                return response.serve_html(html)
 
           case ("/teacher/exam/add", "POST"):
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                result = exam_add.handle(data, user_id)
                if "موفقیت" in result:
@@ -247,7 +242,7 @@ def route(path, method, data, headers):
                return response._200(result)
 
           case ("/teacher/exam", "GET") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                exam = exam_get_one.handle(item_id, user_id)
                if not exam:
@@ -257,7 +252,7 @@ def route(path, method, data, headers):
                return response.serve_html(html)
 
           case ("/teacher/exam/edit", "GET") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                exam = exam_get_one.handle(item_id, user_id)
                if not exam:
@@ -267,25 +262,25 @@ def route(path, method, data, headers):
                return response.serve_html(html)
 
           case ("/teacher/exam/edit", "POST") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                exam_update.handle(item_id, data, user_id)
                return response.redirect("/teacher/exam")
 
           case ("/teacher/exam/delete", "POST") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                exam_delete.handle(item_id, user_id)
                return response.redirect("/teacher/exam")
 
           case ("/teacher/exam/publish", "POST") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                exam_update.handle(item_id, {'is_published': '1'}, user_id)
                return response.redirect("/teacher/exam")
 
           case ("/teacher/exam/results", "GET") if item_id is not None:
-               if not user_id or not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                results = exam_results.handle(item_id)
                stats = report_stats.handle(item_id)

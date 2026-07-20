@@ -1,0 +1,85 @@
+<script>
+     var examsData = '{{ exams_json }}';
+     window.__DATA__ = {
+          base_url: '{{ base_url }}',
+          exams: JSON.parse(examsData)
+     };
+</script>
+
+<div id="admin-exams-page">
+     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <h2>مدیریت تمام آزمون‌ها</h2>
+          <a href="{{ base_url }}/teacher/exam/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+               ساخت آزمون جدید
+          </a>
+     </div>
+     <div id="exams-table-container" style="margin-top:20px; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+               <thead>
+                    <tr style="background:#f5f5f5;">
+                         <th style="padding:12px; text-align:right;">عنوان</th>
+                         <th style="padding:12px; text-align:right;">استاد</th>
+                         <th style="padding:12px; text-align:right;">تعداد سوالات</th>
+                         <th style="padding:12px; text-align:right;">زمان (دقیقه)</th>
+                         <th style="padding:12px; text-align:right;">وضعیت</th>
+                         <th style="padding:12px; text-align:right;">عملیات</th>
+                    </tr>
+               </thead>
+               <tbody id="exams-tbody">
+                    <!-- داده‌ها توسط جاوااسکریپت پر می‌شوند -->
+               </tbody>
+          </table>
+     </div>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var exams = window.__DATA__ && window.__DATA__.exams ? window.__DATA__.exams : [];
+
+          var tbody = document.getElementById('exams-tbody');
+          if (!tbody) return;
+
+          var html = '';
+          if (exams.length === 0) {
+               html = '<tr><td colspan="6" style="padding:20px; text-align:center; color:#999;">هیچ آزمونی یافت نشد</td></tr>';
+          } else {
+               for (var i = 0; i < exams.length; i++) {
+                    var e = exams[i];
+                    var status = e.is_published ? 'منتشر شده' : 'پیش‌نویس';
+                    var teacherName = e.teacher_name || 'نامشخص';
+                    html += '<tr>';
+                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + (e.title || '') + '</td>';
+                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + teacherName + '</td>';
+                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + (e.total_questions || 0) + '</td>';
+                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + (e.duration || 0) + '</td>';
+                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + status + '</td>';
+                    html += '<td style="padding:12px; border-bottom:1px solid #eee; white-space:nowrap;">';
+                    html += '<a href="' + base_url + '/teacher/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon" title="مشاهده"><i class="material-icons">visibility</i></a>';
+                    html += '<a href="' + base_url + '/teacher/exam/edit/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon" title="ویرایش"><i class="material-icons">edit</i></a>';
+                    html += '<a href="' + base_url + '/teacher/exam/results/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon" title="نتایج"><i class="material-icons">assessment</i></a>';
+                    html += '<form method="POST" action="' + base_url + '/teacher/exam/delete/' + e.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این آزمون اطمینان دارید؟\');">';
+                    html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color:red;" title="حذف"><i class="material-icons">delete</i></button>';
+                    html += '</form>';
+                    html += '</td>';
+                    html += '</tr>';
+               }
+          }
+
+          tbody.innerHTML = html;
+
+          // تنظیم لینک‌های data-link (برای المان‌های دیگر)
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+
+          if (window.componentHandler) {
+               window.componentHandler.upgradeAllRegistered();
+          }
+     })();
+</script>
