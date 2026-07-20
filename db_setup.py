@@ -1,140 +1,129 @@
 # db_setup.py
 import sqlite3
-import os
 import settings
+import hashlib
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def setup_database():
-    # اگر دیتابیس وجود دارد، حذفش کن تا از نو ساخته شود
-    if os.path.exists(settings.DB_PATH):
-        print(f"[!] دیتابیس {settings.DB_NAME} از قبل وجود دارد. حذف می‌شود...")
-        os.remove(settings.DB_PATH)
+    conn = sqlite3.connect(str(settings.DB_PATH))
+    cursor = conn.cursor()
 
-    print(f"[*] ساخت دیتابیس جدید: {settings.DB_NAME}")
-    dbc = sqlite3.connect(settings.DB_PATH)
-    cursor = dbc.cursor()
+    # حذف جداول قدیمی (اگر وجود داشته باشند)
+    cursor.execute("DROP TABLE IF EXISTS TBL_users")
+    cursor.execute("DROP TABLE IF EXISTS TBL_exams")
+    cursor.execute("DROP TABLE IF EXISTS TBL_questions")
+    cursor.execute("DROP TABLE IF EXISTS TBL_answers")
+    cursor.execute("DROP TABLE IF EXISTS TBL_exam_users")
+    cursor.execute("DROP TABLE IF EXISTS TBL_exam_questions")
+    cursor.execute("DROP TABLE IF EXISTS TBL_messages")
 
-    # جدول users
+    # ===== جدول کاربران =====
     cursor.execute('''
-        CREATE TABLE users (
+        CREATE TABLE TBL_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            firstname TEXT NOT NULL,
-            lastname TEXT NOT NULL,
-            username TEXT NOT NULL UNIQUE,
+            fullname TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            role INTEGER DEFAULT 0,
-            is_deleted INTEGER DEFAULT 0,
+            role TEXT DEFAULT 'student',
+            university_id TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
-    # جدول sessions
+    # ===== جدول آزمون‌ها =====
     cursor.execute('''
-        CREATE TABLE sessions (
-            id TEXT PRIMARY KEY,
-            user_id INTEGER NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            expires_at TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-        )
-    ''')
-
-    # جدول questions
-    cursor.execute('''
-        CREATE TABLE questions (
+        CREATE TABLE TBL_exams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            teacher_id INTEGER NOT NULL,
-            question_text TEXT NOT NULL,
-            question_type TEXT NOT NULL CHECK (question_type IN ('multiple_choice', 'fill_blank')),
-            options TEXT,
-            correct_answer TEXT NOT NULL,
-            difficulty INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (teacher_id) REFERENCES users(id)
-        )
-    ''')
-
-    # جدول exams
-    cursor.execute('''
-        CREATE TABLE exams (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            teacher_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             description TEXT,
-            duration INTEGER NOT NULL,
-            total_questions INTEGER DEFAULT 0,
-            is_random INTEGER DEFAULT 0,
+            start_time TEXT,
+            duration INTEGER,
+            teacher_id INTEGER,
             is_published INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (teacher_id) REFERENCES users(id)
+            FOREIGN KEY (teacher_id) REFERENCES TBL_users(id) ON DELETE SET NULL
         )
     ''')
 
-    # جدول exam_questions
+    # ===== جدول سوالات =====
     cursor.execute('''
-        CREATE TABLE exam_questions (
-            exam_id INTEGER NOT NULL,
-            question_id INTEGER NOT NULL,
-            order_num INTEGER DEFAULT 0,
-            PRIMARY KEY (exam_id, question_id),
-            FOREIGN KEY (exam_id) REFERENCES exams(id),
-            FOREIGN KEY (question_id) REFERENCES questions(id)
-        )
-    ''')
-
-    # جدول exam_participants
-    cursor.execute('''
-        CREATE TABLE exam_participants (
+        CREATE TABLE TBL_questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             exam_id INTEGER NOT NULL,
-            student_id INTEGER NOT NULL,
-            started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            submitted_at TIMESTAMP,
-            score REAL DEFAULT 0,
-            is_finished INTEGER DEFAULT 0,
-            FOREIGN KEY (exam_id) REFERENCES exams(id),
-            FOREIGN KEY (student_id) REFERENCES users(id),
-            UNIQUE(exam_id, student_id)
+            question_text TEXT NOT NULL,
+            question_type TEXT DEFAULT 'single',
+            score REAL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (exam_id) REFERENCES TBL_exams(id) ON DELETE CASCADE
         )
     ''')
 
-    # جدول exam_answers
+    # ===== جدول پاسخ‌ها (گزینه‌ها) =====
     cursor.execute('''
-        CREATE TABLE exam_answers (
+        CREATE TABLE TBL_answers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            participant_id INTEGER NOT NULL,
             question_id INTEGER NOT NULL,
-            answer TEXT,
+            answer_text TEXT NOT NULL,
             is_correct INTEGER DEFAULT 0,
-            FOREIGN KEY (participant_id) REFERENCES exam_participants(id),
-            FOREIGN KEY (question_id) REFERENCES questions(id),
-            UNIQUE(participant_id, question_id)
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (question_id) REFERENCES TBL_questions(id) ON DELETE CASCADE
         )
     ''')
 
-    # جدول exam_reports (اختیاری)
+    # ===== جدول ثبت‌نام دانشجویان در آزمون =====
     cursor.execute('''
-        CREATE TABLE exam_reports (
+        CREATE TABLE TBL_exam_users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             exam_id INTEGER NOT NULL,
-            total_participants INTEGER DEFAULT 0,
-            average_score REAL DEFAULT 0,
-            highest_score REAL DEFAULT 0,
-            lowest_score REAL DEFAULT 0,
-            generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (exam_id) REFERENCES exams(id)
+            user_id INTEGER NOT NULL,
+            score REAL DEFAULT 0,
+            status TEXT DEFAULT 'pending',
+            started_at TIMESTAMP,
+            completed_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (exam_id) REFERENCES TBL_exams(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES TBL_users(id) ON DELETE CASCADE,
+            UNIQUE(exam_id, user_id)
         )
     ''')
 
-    # ایجاد کاربر ادمین پیش‌فرض
+    # ===== جدول ارتباط سوالات با آزمون (در صورت نیاز) =====
     cursor.execute('''
-        INSERT INTO users (firstname, lastname, username, password, role)
-        VALUES ('Admin', 'System', 'admin', 'admin123', 2)
+        CREATE TABLE TBL_exam_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            exam_id INTEGER NOT NULL,
+            question_id INTEGER NOT NULL,
+            order_number INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (exam_id) REFERENCES TBL_exams(id) ON DELETE CASCADE,
+            FOREIGN KEY (question_id) REFERENCES TBL_questions(id) ON DELETE CASCADE,
+            UNIQUE(exam_id, question_id)
+        )
     ''')
 
-    dbc.commit()
-    dbc.close()
-    print("[+] دیتابیس با موفقیت ساخته شد.")
-    print("[+] کاربر ادمین پیش‌فرض: username='admin', password='admin123'")
+    # ===== جدول پیام‌ها =====
+    cursor.execute('''
+        CREATE TABLE TBL_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_name TEXT NOT NULL,
+            user_email TEXT NOT NULL,
+            subject TEXT,
+            user_message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
 
-if __name__ == '__main__':
-    setup_database()
+    # ===== ایجاد کاربر admin =====
+    admin_email = "admin@exam.com"
+    admin_password = hash_password("admin123")
+    cursor.execute('''
+        INSERT OR IGNORE INTO TBL_users (fullname, email, password, role, university_id)
+        VALUES (?, ?, ?, ?, ?)
+    ''', ("مدیر سیستم", admin_email, admin_password, "admin", "0"))
+
+    conn.commit()
+    conn.close()
+    print("دیتابیس با موفقیت ساخته شد.")
+    print("کاربر ادمین admin: admin@exam.com / admin123")

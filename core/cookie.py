@@ -1,29 +1,18 @@
 # core/cookie.py
-import uuid
-
 def get_cookie(headers, name):
-     cookie_header = headers.get("Cookie")
+     if not headers:
+          return None
+     cookie_header = headers.get('Cookie', '')
      if not cookie_header:
           return None
-     for item in cookie_header.split(";"):
-          item = item.strip()
-          if "=" not in item:
-               continue
-          key, value = item.split("=", 1)
-          if key == name:
-               return value
+     for cookie in cookie_header.split(';'):
+          cookie = cookie.strip()
+          if cookie.startswith(f"{name}="):
+               return cookie.split('=')[1]
      return None
 
-def set_cookie(name, value, path="/", max_age=None, http_only=True):
-     cookie = f"{name}={value}; Path={path}"
-     if max_age:
-          cookie += f"; Max-Age={max_age}"
-     if http_only:
-          cookie += "; HttpOnly"
-     return cookie
+def set_cookie(name, value, max_age=604800, path='/'):
+     return f"{name}={value}; Max-Age={max_age}; Path={path}; HttpOnly"
 
-def delete_cookie(name, path="/"):
-     return f"{name}=; Path={path}; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly"
-
-def generate_session_id():
-     return str(uuid.uuid4())
+def delete_cookie(name, path='/'):
+     return f"{name}=; Max-Age=0; Path={path}; HttpOnly"

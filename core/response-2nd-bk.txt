@@ -4,6 +4,26 @@ import mimetypes
 from pathlib import Path
 import settings
 
+""" def render_template(filename, context=None):
+     template_path = settings.TEMPLATE_DIR / filename
+     if not template_path.exists():
+          return None
+     html = template_path.read_text(encoding="utf-8")
+     
+     # مقدار پیش‌فرض برای context
+     if context is None:
+          context = {}
+     
+     # اضافه کردن base_url به صورت خودکار (اگر در settings تعریف شده باشد)
+     if 'base_url' not in context:
+          context['base_url'] = getattr(settings, 'BASE_URL', '')
+     
+     # جایگزینی همه متغیرها
+     for key, value in context.items():
+          html = html.replace(f"{{{{ {key} }}}}", str(value) if value is not None else "")
+     
+     return html """
+
 def render_template(filename, context=None):
      template_path = settings.TEMPLATE_DIR / filename
      if not template_path.exists():
@@ -18,15 +38,13 @@ def render_template(filename, context=None):
      if 'base_url' not in context:
           context['base_url'] = getattr(settings, 'BASE_URL', '')
      
-     # جایگزینی متغیرها، حتی اگر مقدار None باشد
      for key, value in context.items():
-          if value is None:
-               value = ''
-          html = html.replace(f"{{{{ {key} }}}}", str(value))
+          html = html.replace(f"{{{{ {key} }}}}", str(value) if value is not None else "")
      
      return html
 
 def render_master(template_name, context=None, title=None):
+     """رندر قالب با master layout"""
      if context is None:
           context = {}
      if title:
@@ -34,6 +52,7 @@ def render_master(template_name, context=None, title=None):
      content = render_template(template_name, context)
      if content is None:
           return None
+     # اگر قالب master دارید
      master_context = context.copy()
      master_context['content'] = content
      return render_template("master.html", master_context) or content
@@ -68,16 +87,9 @@ def _404(headers=None):
      headers['Content-Type'] = 'text/html; charset=utf-8'
      return ("<h1>404 - صفحه یافت نشد</h1>", 404, headers)
 
-
 def redirect(location, headers=None):
      if headers is None:
           headers = {}
-     
-     # اگر مسیر با http شروع نشد و با base_url شروع نشد، base_url را اضافه کن
-     base_url = getattr(settings, 'BASE_URL', '')
-     if base_url and not location.startswith(('http://', 'https://', base_url)):
-          location = base_url + location
-     
      headers['Location'] = location
      return ("", 302, headers)
 
