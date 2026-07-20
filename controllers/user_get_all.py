@@ -3,13 +3,14 @@ import sqlite3
 import settings
 
 def handle():
-     dbc = sqlite3.connect(settings.DB_PATH)
-     dbc.row_factory = sqlite3.Row
-     cursor = dbc.cursor()
+     conn = sqlite3.connect(str(settings.DB_PATH))
+     conn.row_factory = sqlite3.Row
+     cursor = conn.cursor()
      cursor.execute('''
-          SELECT id, firstname, lastname, username, role, created_at
-          FROM users WHERE is_deleted = 0
+          SELECT id, fullname, email, role, university_id, created_at
+          FROM TBL_users
+          ORDER BY id DESC
      ''')
      rows = cursor.fetchall()
-     dbc.close()
+     conn.close()
      return [dict(row) for row in rows]

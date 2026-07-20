@@ -1,25 +1,36 @@
 # controllers/user_add.py
 import sqlite3
 import settings
+import hashlib
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def handle(data):
     try:
-        firstname = data.get('firstname', [''])[0].strip()
-        lastname = data.get('lastname', [''])[0].strip()
-        username = data.get('username', [''])[0].strip()
+        fullname = data.get('fullname', [''])[0].strip()
+        email = data.get('email', [''])[0].strip()
         password = data.get('password', [''])[0].strip()
-        if not all([firstname, lastname, username, password]):
-            return "همه فیلدها الزامی هستند"
-        dbc = sqlite3.connect(settings.DB_PATH)
-        cursor = dbc.cursor()
+        role = data.get('role', ['student'])[0].strip()
+        university_id = data.get('university_id', [''])[0].strip()
+
+        if not all([fullname, email, password]):
+            return "همه فیلدهای الزامی پر شوند"
+
+        if role not in ['student', 'teacher']:
+            role = 'student'
+
+        hashed = hash_password(password)
+        conn = sqlite3.connect(str(settings.DB_PATH))
+        cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO users (firstname, lastname, username, password, role)
-            VALUES (?, ?, ?, ?, 0)
-        ''', (firstname, lastname, username, password))
-        dbc.commit()
-        dbc.close()
+            INSERT INTO TBL_users (fullname, email, password, role, university_id)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (fullname, email, hashed, role, university_id))
+        conn.commit()
+        conn.close()
         return "ثبت نام با موفقیت انجام شد"
     except sqlite3.IntegrityError:
-        return "نام کاربری قبلاً ثبت شده است"
+        return "این ایمیل قبلاً ثبت شده است"
     except Exception as e:
         return f"خطا: {e}"

@@ -69,15 +69,24 @@ def _404(headers=None):
      return ("<h1>404 - صفحه یافت نشد</h1>", 404, headers)
 
 
+#def redirect(location, headers=None):
+#     if headers is None:
+#          headers = {}
+     
+     # اگر مسیر با http شروع نشد و با base_url شروع نشد، base_url را اضافه کن
+#     base_url = getattr(settings, 'BASE_URL', '')
+#     if base_url and not location.startswith(('http://', 'https://', base_url)):
+#          location = base_url + location
+     
+#     headers['Location'] = location
+#     return ("", 302, headers)
+
 def redirect(location, headers=None):
      if headers is None:
           headers = {}
-     
-     # اگر مسیر با http شروع نشد و با base_url شروع نشد، base_url را اضافه کن
      base_url = getattr(settings, 'BASE_URL', '')
      if base_url and not location.startswith(('http://', 'https://', base_url)):
           location = base_url + location
-     
      headers['Location'] = location
      return ("", 302, headers)
 

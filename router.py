@@ -203,6 +203,27 @@ def route(path, method, data, headers):
                return question_export.handle(user_id)
 
           # آزمون‌ها
+          case ("/exams", "GET"):
+               if not user_id:
+                    return response.redirect("/login")
+               
+               # اگر کاربر ادمین است: لیست تمام آزمون‌ها را نشان بده
+               if auth.is_admin(user_id):
+                    exams = exam_get_all.handle(None)  # یا handle() بدون فیلتر
+                    html = response.render_master("exams.html", {'exams': exams}, "لیست آزمون‌ها")
+                    return response.serve_html(html)
+               
+               # اگر کاربر استاد است: به صفحه مدیریت آزمون‌های خودش هدایت شود
+               if auth.is_teacher(user_id):
+                    return response.redirect("/teacher/exam")
+               
+               # اگر کاربر دانشجو است: به صفحه آزمون‌های خودش هدایت شود
+               if auth.is_student(user_id):
+                    return response.redirect("/student/exams")
+               
+               # در غیر این صورت (نقش نامعتبر) دسترسی ممنوع
+               return response._403()
+
           case ("/teacher/exam", "GET"):
                if not user_id or not auth.is_teacher(user_id):
                     return response._403()

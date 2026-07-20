@@ -4,16 +4,19 @@ import settings
 
 def handle(user_id, data):
      try:
-          new_role = data.get('role', ['0'])[0]
-          if not new_role.isdigit():
+          new_role = data.get('role', ['student'])[0].strip()
+          if new_role not in ['admin', 'teacher', 'student']:
                return "نقش نامعتبر است"
-          dbc = sqlite3.connect(settings.DB_PATH)
-          cursor = dbc.cursor()
+          
+          conn = sqlite3.connect(str(settings.DB_PATH))
+          cursor = conn.cursor()
           cursor.execute('''
-               UPDATE users SET role = ? WHERE id = ? AND is_deleted = 0
-          ''', (int(new_role), user_id))
-          dbc.commit()
-          dbc.close()
+               UPDATE TBL_users
+               SET role = ?
+               WHERE id = ?
+          ''', (new_role, user_id))
+          conn.commit()
+          conn.close()
           return "نقش کاربر تغییر کرد"
      except Exception as e:
           return f"خطا: {e}"

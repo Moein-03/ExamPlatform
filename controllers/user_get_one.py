@@ -3,13 +3,14 @@ import sqlite3
 import settings
 
 def handle(user_id):
-     dbc = sqlite3.connect(settings.DB_PATH)
-     dbc.row_factory = sqlite3.Row
-     cursor = dbc.cursor()
+     conn = sqlite3.connect(str(settings.DB_PATH))
+     conn.row_factory = sqlite3.Row
+     cursor = conn.cursor()
      cursor.execute('''
-          SELECT id, firstname, lastname, username, role, created_at
-          FROM users WHERE id = ? AND is_deleted = 0
+          SELECT id, fullname, email, role, university_id, created_at
+          FROM TBL_users
+          WHERE id = ?
      ''', (user_id,))
      row = cursor.fetchone()
-     dbc.close()
+     conn.close()
      return dict(row) if row else None
