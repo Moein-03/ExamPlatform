@@ -11,13 +11,13 @@
           .score-number { font-size: 2.5em; color: #3f51b5; font-weight: bold; }
           .status-passed { color: #4caf50; font-size: 1.5em; font-weight: bold; }
           .status-failed { color: #f44336; font-size: 1.5em; font-weight: bold; }
-          .question-feedback { margin-bottom: 20px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; }
+          .question-feedback { margin-bottom: 20px; padding: 15px; border-radius: 8px; background: white; border: 1px solid #e0e0e0; }
           .correct { color: #4caf50; font-weight: bold; }
           .incorrect { color: #f44336; font-weight: bold; }
           .stat-box { padding: 20px; text-align: center; background: #f9f9f9; border-radius: 8px; height: 100%; }
-          .mdl-card { width: 100%; }
           .highlight-correct { background: #e8f5e9; border-color: #4caf50; }
           .highlight-incorrect { background: #ffebee; border-color: #f44336; }
+          .mdl-card { width: 100%; }
      </style>
 </head>
 <body>
@@ -38,10 +38,10 @@
      </div>
 
      <script>
-          // ===== دریافت داده‌ها به صورت رشته و تبدیل =====
+          // ===== دریافت داده‌ها =====
           var feedbackDataStr = '{{ feedback_json }}';
           var statsDataStr = '{{ stats_json }}';
-          
+
           var feedbackData = JSON.parse(feedbackDataStr);
           var statsData = JSON.parse(statsDataStr);
           var passed = feedbackData.passed || false;
@@ -49,14 +49,15 @@
           // ===== رندر آمار =====
           function renderStats(stats) {
                var container = document.getElementById('stats-container');
+               if (!container) return;
                var html = '';
-               
+
                html += '<div class="mdl-cell mdl-cell--4-col">';
                html += '<div class="stat-box">';
                html += '<h3>نمره شما</h3>';
                html += '<p class="score-number">' + (feedbackData.score || 0) + '</p>';
                html += '</div></div>';
-               
+
                html += '<div class="mdl-cell mdl-cell--4-col">';
                html += '<div class="stat-box">';
                html += '<h3>وضعیت</h3>';
@@ -64,7 +65,7 @@
                var statusText = passed ? 'قبول' : 'مردود';
                html += '<p class="' + statusClass + '">' + statusText + '</p>';
                html += '</div></div>';
-               
+
                html += '<div class="mdl-cell mdl-cell--4-col">';
                html += '<div class="stat-box">';
                html += '<h3>آمار کلی</h3>';
@@ -72,21 +73,21 @@
                html += '<p>بالاترین: ' + (stats.max_score || 0) + '</p>';
                html += '<p>پایین‌ترین: ' + (stats.min_score || 0) + '</p>';
                html += '</div></div>';
-               
+
                container.innerHTML = html;
           }
 
           // ===== رندر بازخورد سوالات =====
           function renderFeedback(details) {
                var container = document.getElementById('feedback-details-container');
-               var html = '';
-               
+               if (!container) return;
+
                if (!details || details.length === 0) {
-                    html = '<p style="text-align:center; color:#999;">هیچ بازخوردی موجود نیست.</p>';
-                    container.innerHTML = html;
+                    container.innerHTML = '<p style="text-align:center; color:#999;">هیچ بازخوردی موجود نیست.</p>';
                     return;
                }
-               
+
+               var html = '';
                for (var i = 0; i < details.length; i++) {
                     var item = details[i];
                     var qNum = i + 1;
@@ -94,7 +95,7 @@
                     var statusClass = isCorrect ? 'correct' : 'incorrect';
                     var statusText = isCorrect ? 'صحیح' : 'غلط';
                     var highlightClass = isCorrect ? 'highlight-correct' : 'highlight-incorrect';
-                    
+
                     html += '<div class="question-feedback ' + highlightClass + '">';
                     html += '<p><strong>سوال ' + qNum + ':</strong> ' + (item.question_text || '') + '</p>';
                     html += '<p><strong>پاسخ شما:</strong> ' + (item.user_answer || 'پاسخی داده نشده') + '</p>';
@@ -102,7 +103,6 @@
                     html += '<p class="' + statusClass + '">' + statusText + '</p>';
                     html += '</div>';
                }
-               
                container.innerHTML = html;
           }
 
@@ -110,13 +110,11 @@
           window.onload = function() {
                renderStats(statsData);
                renderFeedback(feedbackData.details || []);
-               
                if (window.componentHandler) {
                     window.componentHandler.upgradeAllRegistered();
                }
           };
      </script>
-     
      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
 </body>
 </html>

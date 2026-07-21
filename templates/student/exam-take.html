@@ -11,7 +11,9 @@
           .question-container { margin-bottom: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; }
           .timer-chip { background-color: #ff5252; color: white; font-size: 1.2em; padding: 8px 16px; border-radius: 16px; display: inline-block; }
           .mdl-card { width: 100%; }
-          .option-label { display: block; padding: 8px 0; }
+          .option-label { display: block; padding: 8px 0; cursor: pointer; }
+          .option-label input { margin-left: 10px; }
+          .btn-submit { margin-top: 20px; }
      </style>
 </head>
 <body>
@@ -22,14 +24,14 @@
                          <h2 class="mdl-card__title-text">{{ exam.title }}</h2>
                          <div style="margin-right: auto;">
                          <span class="timer-chip">
-                              <span id="time-display">00:00</span>
+                              ⏱️ <span id="time-display">00:00</span>
                          </span>
                          </div>
                     </div>
                     <div class="mdl-card__supporting-text">
                          <form id="exam-form" method="POST" action="{{ base_url }}/student/exam/submit/{{ exam.id }}">
                          <div id="questions-container"></div>
-                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="submit-exam-btn">
+                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored btn-submit" id="submit-exam-btn">
                               ارسال پاسخ‌ها
                          </button>
                          </form>
@@ -39,40 +41,40 @@
      </div>
 
      <script>
-          // ===== دریافت داده‌ها به صورت رشته و تبدیل =====
+          // ===== دریافت داده‌ها =====
           var questionsDataStr = '{{ questions_json }}';
           var durationStr = '{{ exam.duration }}';
-          var examIdStr = '{{ exam.id }}';
-          var baseUrlStr = '{{ base_url }}';
+          var baseUrl = '{{ base_url }}';
 
-          // تبدیل به نوع درست
           var questionsData = JSON.parse(questionsDataStr);
-          var duration = parseInt(durationStr, 10);
-          var examId = parseInt(examIdStr, 10);
-          var baseUrl = baseUrlStr;
+          var duration = parseInt(durationStr, 10) || 0;
+          var timeLeft = duration * 60;
 
-          // ===== ساخت HTML سوالات =====
+          // ===== رندر سوالات =====
           function renderQuestions(questions) {
                var container = document.getElementById('questions-container');
+               if (!container) return;
+               if (!questions || questions.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;">هیچ سوالی برای این آزمون تعریف نشده است.</p>';
+                    return;
+               }
+
                var html = '';
-               
                for (var i = 0; i < questions.length; i++) {
                     var q = questions[i];
                     var qNum = i + 1;
                     html += '<div class="question-container">';
                     html += '<h4>سوال ' + qNum + ': ' + (q.question_text || '') + '</h4>';
                     html += '<p><small>نمره: ' + (q.score || 0) + '</small></p>';
-                    
+
                     if (q.question_type === 'single' || q.question_type === 'multiple') {
                          var inputType = (q.question_type === 'single') ? 'radio' : 'checkbox';
                          var answers = q.answers || [];
-                         
                          for (var j = 0; j < answers.length; j++) {
                          var ans = answers[j];
                          html += '<label class="option-label" for="q' + q.id + '_' + ans.id + '">';
                          html += '<input type="' + inputType + '" id="q' + q.id + '_' + ans.id + '" ';
-                         html += 'name="question_' + q.id + '" value="' + ans.id + '" ';
-                         html += 'class="mdl-radio__button">';
+                         html += 'name="question_' + q.id + '" value="' + ans.id + '">';
                          html += '<span>' + ans.answer_text + '</span>';
                          html += '</label>';
                          }
@@ -82,48 +84,45 @@
                          html += '<label class="mdl-textfield__label" for="q' + q.id + '">پاسخ خود را وارد کنید...</label>';
                          html += '</div>';
                     }
-                    
+
                     html += '</div>';
                }
-               
                container.innerHTML = html;
           }
 
           // ===== تایمر =====
           function startTimer(totalSeconds) {
-               var timeLeft = totalSeconds;
                var display = document.getElementById('time-display');
-               
+               if (!display) return;
                var timerInterval = setInterval(function() {
-                    var minutes = Math.floor(timeLeft / 60);
-                    var seconds = timeLeft % 60;
+                    var minutes = Math.floor(totalSeconds / 60);
+                    var seconds = totalSeconds % 60;
                     display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-                    
-                    if (timeLeft <= 0) {
+                    if (totalSeconds <= 0) {
                          clearInterval(timerInterval);
                          alert('زمان شما به پایان رسید!');
                          document.getElementById('exam-form').submit();
                     }
-                    timeLeft--;
+                    totalSeconds--;
                }, 1000);
           }
 
           // ===== بارگذاری صفحه =====
           window.onload = function() {
                renderQuestions(questionsData);
-               startTimer(duration * 60);
-               
+               if (duration > 0) startTimer(duration * 60);
+
+               // جلوگیری از خروج تصادفی
                window.addEventListener('beforeunload', function(e) {
                     e.preventDefault();
                     e.returnValue = '';
                });
-               
+
                if (window.componentHandler) {
                     window.componentHandler.upgradeAllRegistered();
                }
           };
      </script>
-     
      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
 </body>
 </html>

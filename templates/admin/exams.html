@@ -1,85 +1,110 @@
-<script>
-     var examsData = '{{ exams_json }}';
-     window.__DATA__ = {
-          base_url: '{{ base_url }}',
-          exams: JSON.parse(examsData)
-     };
-</script>
-
-<div id="admin-exams-page">
-     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <h2>مدیریت تمام آزمون‌ها</h2>
-          <a href="{{ base_url }}/teacher/exam/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-               ساخت آزمون جدید
-          </a>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>مدیریت تمام آزمون‌ها</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; padding: 20px; }
+          .mdl-card { width: 100%; }
+          .table-container { overflow-x: auto; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 12px; text-align: right; border-bottom: 1px solid #e0e0e0; }
+          th { background: #f5f5f5; font-weight: bold; }
+          .btn-icon { color: #3f51b5; }
+          .btn-delete { color: #f44336; }
+          .status-published { color: #4caf50; font-weight: bold; }
+          .status-draft { color: #ff9800; font-weight: bold; }
+          .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+     </style>
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">مدیریت تمام آزمون‌ها</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                         <div class="header-actions">
+                         <a href="{{ base_url }}/teacher/exam/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                              ساخت آزمون جدید
+                         </a>
+                         </div>
+                         <div class="table-container">
+                         <table>
+                              <thead>
+                                   <tr>
+                                        <th>عنوان</th>
+                                        <th>استاد</th>
+                                        <th>تعداد سوالات</th>
+                                        <th>زمان (دقیقه)</th>
+                                        <th>وضعیت</th>
+                                        <th>عملیات</th>
+                                   </tr>
+                              </thead>
+                              <tbody id="exams-tbody">
+                                   <tr><td colspan="6" style="text-align:center;">در حال بارگذاری...</td></tr>
+                              </tbody>
+                         </table>
+                         </div>
+                    </div>
+               </div>
+          </div>
      </div>
-     <div id="exams-table-container" style="margin-top:20px; overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-               <thead>
-                    <tr style="background:#f5f5f5;">
-                         <th style="padding:12px; text-align:right;">عنوان</th>
-                         <th style="padding:12px; text-align:right;">استاد</th>
-                         <th style="padding:12px; text-align:right;">تعداد سوالات</th>
-                         <th style="padding:12px; text-align:right;">زمان (دقیقه)</th>
-                         <th style="padding:12px; text-align:right;">وضعیت</th>
-                         <th style="padding:12px; text-align:right;">عملیات</th>
-                    </tr>
-               </thead>
-               <tbody id="exams-tbody">
-                    <!-- داده‌ها توسط جاوااسکریپت پر می‌شوند -->
-               </tbody>
-          </table>
-     </div>
-</div>
 
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-          var exams = window.__DATA__ && window.__DATA__.exams ? window.__DATA__.exams : [];
+     <script>
+          // ===== دریافت داده از سرور =====
+          var examsDataStr = '{{ exams_json }}';
+          var baseUrl = '{{ base_url }}';
+          var exams = JSON.parse(examsDataStr);
 
-          var tbody = document.getElementById('exams-tbody');
-          if (!tbody) return;
+          // ===== رندر جدول =====
+          function renderTable(exams) {
+               var tbody = document.getElementById('exams-tbody');
+               if (!tbody) return;
 
-          var html = '';
-          if (exams.length === 0) {
-               html = '<tr><td colspan="6" style="padding:20px; text-align:center; color:#999;">هیچ آزمونی یافت نشد</td></tr>';
-          } else {
+               if (exams.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#999;">هیچ آزمونی یافت نشد</td></tr>';
+                    return;
+               }
+
+               var html = '';
                for (var i = 0; i < exams.length; i++) {
                     var e = exams[i];
-                    var status = e.is_published ? 'منتشر شده' : 'پیش‌نویس';
+                    var statusText = e.is_published ? 'منتشر شده' : 'پیش‌نویس';
+                    var statusClass = e.is_published ? 'status-published' : 'status-draft';
                     var teacherName = e.teacher_name || 'نامشخص';
+
                     html += '<tr>';
-                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + (e.title || '') + '</td>';
-                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + teacherName + '</td>';
-                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + (e.total_questions || 0) + '</td>';
-                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + (e.duration || 0) + '</td>';
-                    html += '<td style="padding:12px; border-bottom:1px solid #eee;">' + status + '</td>';
-                    html += '<td style="padding:12px; border-bottom:1px solid #eee; white-space:nowrap;">';
-                    html += '<a href="' + base_url + '/teacher/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon" title="مشاهده"><i class="material-icons">visibility</i></a>';
-                    html += '<a href="' + base_url + '/teacher/exam/edit/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon" title="ویرایش"><i class="material-icons">edit</i></a>';
-                    html += '<a href="' + base_url + '/teacher/exam/results/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon" title="نتایج"><i class="material-icons">assessment</i></a>';
-                    html += '<form method="POST" action="' + base_url + '/teacher/exam/delete/' + e.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این آزمون اطمینان دارید؟\');">';
-                    html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color:red;" title="حذف"><i class="material-icons">delete</i></button>';
+                    html += '<td>' + (e.title || '') + '</td>';
+                    html += '<td>' + teacherName + '</td>';
+                    html += '<td>' + (e.total_questions || 0) + '</td>';
+                    html += '<td>' + (e.duration || 0) + '</td>';
+                    html += '<td><span class="' + statusClass + '">' + statusText + '</span></td>';
+                    html += '<td>';
+                    html += '<a href="' + baseUrl + '/teacher/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon" title="مشاهده"><i class="material-icons">visibility</i></a>';
+                    html += '<a href="' + baseUrl + '/teacher/exam/edit/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon" title="ویرایش"><i class="material-icons">edit</i></a>';
+                    html += '<a href="' + baseUrl + '/teacher/exam/results/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon" title="نتایج"><i class="material-icons">assessment</i></a>';
+                    html += '<form method="POST" action="' + baseUrl + '/teacher/exam/delete/' + e.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این آزمون اطمینان دارید؟\');">';
+                    html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon btn-delete" title="حذف"><i class="material-icons">delete</i></button>';
                     html += '</form>';
                     html += '</td>';
                     html += '</tr>';
                }
+               tbody.innerHTML = html;
           }
 
-          tbody.innerHTML = html;
-
-          // تنظیم لینک‌های data-link (برای المان‌های دیگر)
-          var links = document.querySelectorAll('[data-link]');
-          for (var j = 0; j < links.length; j++) {
-               var link = links[j];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
+          // ===== بارگذاری =====
+          window.onload = function() {
+               renderTable(exams);
+               if (window.componentHandler) {
+                    window.componentHandler.upgradeAllRegistered();
                }
-          }
-
-          if (window.componentHandler) {
-               window.componentHandler.upgradeAllRegistered();
-          }
-     })();
-</script>
+          };
+     </script>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>

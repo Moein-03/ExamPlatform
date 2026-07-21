@@ -1,4 +1,3 @@
-# router.py
 from core import auth, response, cookie
 import settings
 import json
@@ -15,13 +14,11 @@ from controllers import (
 def route(path, method, data, headers):
      print(f"[DEBUG] path: '{path}', method: '{method}'")
 
-     # گرفتن session_id از کوکی
      session_id = cookie.get_cookie(headers, "session_id")
      current_user = auth.get_current_user(session_id)
      user_id = current_user['id'] if current_user else None
      user_role = auth.get_user_role(user_id) if user_id else None
 
-     # استخراج id از مسیر
      path_parts = path.strip("/").split("/")
      item_id = None
      if path_parts and path_parts[-1].isdigit():
@@ -30,34 +27,28 @@ def route(path, method, data, headers):
 
      print(f"[DEBUG] clean_path: '{clean_path}', item_id: {item_id}")
 
-     # پشتیبانی از _method (برای PUT/DELETE)
      if method == "POST" and data and '_method' in data:
           method = data['_method'][0].upper()
 
-     # ============================================================
-     #  مسیریابی با match/case (مثل پروژه استاد)
-     # ============================================================
      match (clean_path, method):
-          # ---------- صفحه اصلی ----------
+          # ========== صفحه اصلی ==========
           case ("/", "GET"):
                html = response.render_master("index.html", title="صفحه اصلی")
                return response.serve_html(html) if html else response._200("صفحه اصلی")
 
-          # ---------- راه‌اندازی دیتابیس ----------
+          # ========== راه‌اندازی دیتابیس ==========
           case ("/setup", "GET"):
                db_setup.setup_database()
                return response._200("Database setup completed")
 
-          # ---------- هدایت /exams بر اساس نقش ----------
+          # ========== مسیر /exams ==========
           case ("/exams", "GET"):
                if not user_id:
                     return response.redirect("/login")
-               
                if auth.is_admin(user_id):
                     exams = exam_get_all.handle(None)
                     exams_json = json.dumps(exams, ensure_ascii=False)
                     html = response.render_master("admin/exams.html", {
-                         'exams': exams,
                          'exams_json': exams_json,
                          'base_url': settings.BASE_URL
                     }, "لیست آزمون‌ها")
@@ -71,14 +62,13 @@ def route(path, method, data, headers):
                
                return response._403()
 
-          # ---------- ورود (GET) ----------
+          # ========== ورود ==========
           case ("/login", "GET"):
                if user_id:
                     return response.redirect("/dashboard")
-               html = response.render_master("login.html", title="ورود")
+               html = response.render_master("login.html", {'base_url': settings.BASE_URL}, "ورود")
                return response.serve_html(html)
 
-          # ---------- ورود (POST) – اصلاح شده با redirect ----------
           case ("/login", "POST"):
                user = user_login.handle(data)
                if user:
@@ -90,38 +80,35 @@ def route(path, method, data, headers):
                     html = response.render_master("login.html", context, "ورود")
                     return response.serve_html(html)
 
-          # ---------- ثبت‌نام (GET) ----------
+          # ========== ثبت‌ نام ==========
           case ("/register", "GET"):
                if user_id:
                     return response.redirect("/dashboard")
-               # اطمینان از وجود قالب register.html
-               html = response.render_master("register.html", title="ثبت نام")
+               html = response.render_master("register.html", {'base_url': settings.BASE_URL}, "ثبت نام")
                if html:
                     return response.serve_html(html)
                else:
-                    # اگر قالب وجود نداشت، یک فرم ساده بساز
                     return response._200("""
                          <h2>ثبت نام</h2>
-                         <form method="post" action="/register">
-                         <input name="fullname" placeholder="نام کامل"><br>
-                         <input name="email" placeholder="ایمیل"><br>
-                         <input name="password" type="password" placeholder="رمز"><br>
-                         <select name="role">
-                              <option value="student">دانشجو</option>
-                              <option value="teacher">استاد</option>
-                         </select><br>
-                         <button type="submit">ثبت نام</button>
+                         <form method="post" action="/ExamPlatform/register">
+                              <input name="fullname" placeholder="نام کامل"><br>
+                              <input name="email" placeholder="ایمیل"><br>
+                              <input name="password" type="password" placeholder="رمز"><br>
+                              <select name="role">
+                                   <option value="student">دانشجو</option>
+                                   <option value="teacher">استاد</option>
+                              </select><br>
+                              <button type="submit">ثبت نام</button>
                          </form>
                     """)
 
-          # ---------- ثبت‌ نام (POST) ----------
           case ("/register", "POST"):
                result = user_add.handle(data)
                if "موفقیت" in result:
                     return response.redirect("/login")
                return response._200(result)
 
-          # ---------- خروج ----------
+          # ========== خروج ==========
           case ("/logout", "GET"):
                if session_id:
                     auth.delete_session(session_id)
@@ -129,29 +116,23 @@ def route(path, method, data, headers):
                     return response.redirect("/", {"Set-Cookie": cookie_header})
                return response.redirect("/")
 
-          # ---------- داشبورد ----------
+          # ========== داشبورد ==========
           case ("/dashboard", "GET"):
                if not user_id:
                     return response._401()
                html = response.render_master("dashboard.html", {'user': current_user}, "داشبورد")
                return response.serve_html(html)
 
-          # ============================================================
-          #  بخش ادمین
-          # ============================================================
+          # ========== بخش ادمین ==========
           case ("/admin/users", "GET"):
-               if not user_id:
-                    return response._401()
-               if not auth.is_admin(user_id):
+               if not user_id or not auth.is_admin(user_id):
                     return response._403()
                users = user_get_all.handle()
                html = response.render_master("admin/users.html", {'users': users}, "مدیریت کاربران")
                return response.serve_html(html)
 
           case ("/admin/user", "GET") if item_id is not None:
-               if not user_id:
-                    return response._401()
-               if not auth.is_admin(user_id):
+               if not user_id or not auth.is_admin(user_id):
                     return response._403()
                user = user_get_one.handle(item_id)
                if not user:
@@ -165,13 +146,9 @@ def route(path, method, data, headers):
                user_update_role.handle(item_id, data)
                return response.redirect("/admin/users")
 
-          # ============================================================
-          #  بخش استاد
-          # ============================================================
+          # ========== بخش استاد ==========
           case ("/teacher/question", "GET"):
-               if not user_id:
-                    return response._401()
-               if not auth.is_teacher(user_id):
+               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
                     return response._403()
                questions = question_get_all.handle(user_id)
                html = response.render_master("teacher/questions.html", {'questions': questions}, "بانک سوالات")
@@ -282,9 +259,7 @@ def route(path, method, data, headers):
                html = response.render_master("teacher/results.html", {'results': results, 'stats': stats}, "نتایج آزمون")
                return response.serve_html(html)
 
-          # ============================================================
-          #  بخش دانشجو
-          # ============================================================
+          # ========== بخش دانشجو ==========
           case ("/student/exams", "GET"):
                if not user_id or not auth.is_student(user_id):
                     return response._403()
@@ -299,8 +274,6 @@ def route(path, method, data, headers):
                if not exam or not exam.get('is_published'):
                     return response._404()
                questions = question_get_by_exam.handle(item_id)
-
-               import json
                questions_json = json.dumps(questions, ensure_ascii=False)
                context = {
                     'exam': exam,
@@ -323,10 +296,8 @@ def route(path, method, data, headers):
                     return response._403()
                feedback = exam_results.handle(item_id, user_id)
                stats = report_stats.handle(item_id)
-               import json
                feedback_json = json.dumps(feedback, ensure_ascii=False)
                stats_json = json.dumps(stats, ensure_ascii=False)
-               
                context = {
                     'feedback_json': feedback_json,
                     'stats_json': stats_json,
@@ -335,10 +306,10 @@ def route(path, method, data, headers):
                html = response.render_master("student/exam-feedback.html", context, "بازخورد آزمون")
                return response.serve_html(html)
 
-          # ---------- فایل‌های استاتیک ----------
+          # ========== فایل‌های استاتیک ==========
           case _ if clean_path.startswith("/static/"):
                return response.serve_static_file(clean_path)
 
-          # ---------- ۴۰۴ ----------
+          # ========== ۴۰۴ ==========
           case _:
                return response._404()

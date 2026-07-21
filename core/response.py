@@ -8,22 +8,13 @@ def render_template(filename, context=None):
      template_path = settings.TEMPLATE_DIR / filename
      if not template_path.exists():
           return None
-     
      html = template_path.read_text(encoding="utf-8")
-     
      if context is None:
           context = {}
-     
-     # اضافه کردن base_url به صورت خودکار
      if 'base_url' not in context:
           context['base_url'] = getattr(settings, 'BASE_URL', '')
-     
-     # جایگزینی متغیرها، حتی اگر مقدار None باشد
      for key, value in context.items():
-          if value is None:
-               value = ''
-          html = html.replace(f"{{{{ {key} }}}}", str(value))
-     
+          html = html.replace(f"{{{{ {key} }}}}", str(value) if value is not None else "")
      return html
 
 def render_master(template_name, context=None, title=None):
