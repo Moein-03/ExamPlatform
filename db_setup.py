@@ -51,7 +51,7 @@ def setup_database():
     cursor.execute('''
         CREATE TABLE TBL_questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            exam_id INTEGER NOT NULL,
+            exam_id INTEGER,
             question_text TEXT NOT NULL,
             question_type TEXT DEFAULT 'single',
             score REAL DEFAULT 1,
