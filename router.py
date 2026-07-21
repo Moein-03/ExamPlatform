@@ -42,7 +42,8 @@ def route(path, method, data, headers):
           case ("/login", "GET"):
                if user_id:
                     return response.redirect("/dashboard")
-               html = response.render_master("login.html", {'base_url': settings.BASE_URL}, "ورود")
+               context = {'base_url': settings.BASE_URL, 'error': ''}
+               html = response.render_master("login.html", context, "ورود")
                return response.serve_html(html)
 
           case ("/login", "POST"):

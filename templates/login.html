@@ -21,7 +21,7 @@
 
 <script>
      (function() {
-          var base_url = '{{ base_url }}' || '';
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
           var error = '{{ error }}' || null;
 
           // تنظیم لینک‌های data-link
