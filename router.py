@@ -80,7 +80,8 @@ def route(path, method, data, headers):
           case ("/dashboard", "GET"):
                if not user_id:
                     return response._401()
-               # داده‌های داشبورد بر اساس نقش
+
+               # آماده‌سازی داده‌های آماری بر اساس نقش
                dashboard_data = {}
                if user_role == 'admin':
                     dashboard_data['users_count'] = len(user_get_all.handle())
@@ -89,13 +90,18 @@ def route(path, method, data, headers):
                elif user_role == 'teacher':
                     dashboard_data['exams_count'] = len(exam_get_all.handle(user_id))
                     dashboard_data['questions_count'] = len(question_get_all.handle(user_id))
-               elif user_role == 'student':
+               else:
                     dashboard_data['exams_count'] = len(exam_get_all.handle(None, only_published=True))
-               html = response.render_master("dashboard.html", {
-                    'user': current_user,
-                    'dashboard_data': dashboard_data,
+
+               user_json = json.dumps(current_user, ensure_ascii=False)
+               dashboard_json = json.dumps(dashboard_data, ensure_ascii=False)
+
+               context = {
+                    'user_json': user_json,
+                    'dashboard_json': dashboard_json,
                     'base_url': settings.BASE_URL
-               }, "داشبورد")
+               }
+               html = response.render_master("dashboard.html", context, "داشبورد")
                return response.serve_html(html)
 
           # ---------- مدیریت کاربران  ----------
@@ -103,10 +109,12 @@ def route(path, method, data, headers):
                if not user_id or user_role != 'admin':
                     return response._403()
                users = user_get_all.handle()
-               html = response.render_master("users.html", {
-                    'users': users,
+               users_json = json.dumps(users, ensure_ascii=False)
+               context = {
+                    'users_json': users_json,
                     'base_url': settings.BASE_URL
-               }, "مدیریت کاربران")
+               }
+               html = response.render_master("users.html", context, "مدیریت کاربران")
                return response.serve_html(html)
 
           case ("/user", "GET") if item_id is not None:
@@ -282,9 +290,13 @@ def route(path, method, data, headers):
           case ("/question/add", "GET"):
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-               html = response.render_master("question-form.html", {
+               context = {
+                    'mode': 'add',
+                    'question_json': 'null',
+                    'answers_json': 'null',
                     'base_url': settings.BASE_URL
-               }, "افزودن سوال")
+               }
+               html = response.render_master("question-form.html", context, "افزودن سوال")
                return response.serve_html(html)
 
           case ("/question/add", "POST"):
@@ -302,11 +314,14 @@ def route(path, method, data, headers):
                if not question:
                     return response._404()
                answers = answer_get_by_question.handle(item_id)
-               html = response.render_master("question-form.html", {
-                    'question': question,
-                    'answers': answers,
+               question_json = json.dumps(question, ensure_ascii=False)
+               answers_json = json.dumps(answers, ensure_ascii=False)
+               context = {
+                    'question_json': question_json,
+                    'answers_json': answers_json,
                     'base_url': settings.BASE_URL
-               }, "ویرایش سوال")
+               }
+               html = response.render_master("question-edit.html", context, "ویرایش سوال")
                return response.serve_html(html)
 
           case ("/question/edit", "POST") if item_id is not None:

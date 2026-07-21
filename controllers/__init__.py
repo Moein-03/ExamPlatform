@@ -1,4 +1,6 @@
 # controllers/__init__.py
+from . import answer_get_by_question
+from . import answer_show
 from . import user_add
 from . import user_login
 from . import user_get_one
@@ -16,6 +18,7 @@ from . import question_add
 from . import question_get_all
 from . import question_get_by_exam
 from . import question_delete
+from . import question_get_one
 from . import question_import
 from . import question_export
 from . import report_stats

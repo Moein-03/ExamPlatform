@@ -1,0 +1,62 @@
+<div id="dashboard-page">
+    <h2>داشبورد</h2>
+    <p id="welcome-message">خوش آمدید</p>
+    <div id="dashboard-cards" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:20px; margin-top:20px;"></div>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
+          var user = window.__DATA__ && window.__DATA__.user ? window.__DATA__.user : null;
+          var role = user ? user.role : -1;
+
+          var welcome = document.getElementById('welcome-message');
+          if (user && welcome) {
+               welcome.textContent = 'خوش آمدید، ' + (user.firstname || '') + ' ' + (user.lastname || '');
+          }
+
+          var cardsContainer = document.getElementById('dashboard-cards');
+          if (!cardsContainer) return;
+
+          var cards = [];
+
+          if (role === 2) {
+               cards.push({ title: 'مدیریت کاربران', desc: 'مدیریت نقش و دسترسی کاربران', link: '{{ base_url }}/admin/users', btn: 'ورود' });
+          }
+
+          if (role >= 1) {
+               cards.push({ title: 'سوالات', desc: 'ایجاد، ویرایش و حذف سوالات', link: '{{ base_url }}/teacher/question', btn: 'مدیریت' });
+               cards.push({ title: 'آزمون‌ها', desc: 'ساخت و مدیریت آزمون‌ها', link: '{{ base_url }}/teacher/exam', btn: 'مدیریت' });
+          }
+
+          if (role === 0) {
+               cards.push({ title: 'آزمون‌های من', desc: 'شرکت در آزمون‌ها و مشاهده نتایج', link: '{{ base_url }}/student/exams', btn: 'ورود' });
+          }
+
+          cards.push({ title: 'همه آزمون‌ها', desc: 'مشاهده تمام آزمون‌های منتشر شده', link: '{{ base_url }}/exams', btn: 'مشاهده' });
+
+          var html = '';
+          for (var i = 0; i < cards.length; i++) {
+               var c = cards[i];
+               html += '<div style="background:white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
+               html += '<h3>' + c.title + '</h3>';
+               html += '<p>' + c.desc + '</p>';
+               html += '<a href="' + base_url + c.link + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">' + c.btn + '</a>';
+               html += '</div>';
+          }
+          cardsContainer.innerHTML = html;
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var j = 0; j < links.length; j++) {
+               var link = links[j];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+
+          if (window.componentHandler) {
+               window.componentHandler.upgradeAllRegistered();
+          }
+     })();
+</script>

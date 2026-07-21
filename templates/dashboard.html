@@ -1,62 +1,175 @@
-<div id="dashboard-page">
-    <h2>داشبورد</h2>
-    <p id="welcome-message">خوش آمدید</p>
-    <div id="dashboard-cards" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:20px; margin-top:20px;"></div>
-</div>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>داشبورد</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          html, body { width: 100%; max-width: 100%; overflow-x: hidden; direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-grid { max-width: 100%; padding: 0; margin: 0 auto; }
+          .mdl-cell { padding: 0; }
+          .mdl-card { width: 100%; max-width: 100%; margin: 0; }
+          .mdl-card__supporting-text { padding: 16px; width: 100%; max-width: 100%; box-sizing: border-box; }
+          .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+          .stat-box { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .stat-box .number { font-size: 2em; font-weight: bold; color: #3f51b5; }
+          .stat-box .label { color: #666; font-size: 0.9em; margin-top: 4px; }
+          .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
+          .action-card { background: white; padding: 24px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; text-decoration: none; color: #333; }
+          .action-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+          .action-card .icon { font-size: 3em; color: #3f51b5; }
+          .action-card .title { font-weight: 500; margin-top: 12px; }
+          .action-card .desc { font-size: 0.85em; color: #888; margin-top: 4px; }
+          .welcome-text { font-size: 1.2em; color: #555; margin-bottom: 20px; }
+          .role-badge { background: #3f51b5; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+          .role-badge.admin { background: #c62828; }
+          .role-badge.teacher { background: #2e7d32; }
+          .role-badge.student { background: #1565c0; }
+          .hidden { display: none !important; }
+          @media (max-width: 600px) { body { padding: 10px; } .action-grid { grid-template-columns: 1fr; } .dashboard-stats { grid-template-columns: repeat(2, 1fr); } }
+     </style>
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">داشبورد</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
 
-<script>
-     (function() {
-          var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
-          var user = window.__DATA__ && window.__DATA__.user ? window.__DATA__.user : null;
-          var role = user ? user.role : -1;
+                         <div class="welcome-text" id="welcome-text">
+                              خوش آمدید، <strong id="user-fullname"></strong>
+                         <span class="role-badge" id="role-badge"></span>
+                         </div>
 
-          var welcome = document.getElementById('welcome-message');
-          if (user && welcome) {
-               welcome.textContent = 'خوش آمدید، ' + (user.firstname || '') + ' ' + (user.lastname || '');
+                         <div class="dashboard-stats" id="stats-container">
+                              <!-- توسط جاوااسکریپت پر می‌شود -->
+                         </div>
+
+                         <h4 style="margin: 16px 0 8px 0;">دسترسی سریع</h4>
+                         <div class="action-grid" id="actions-container">
+                              <!-- توسط جاوااسکریپت پر می‌شود -->
+                         </div>
+
+                    </div>
+               </div>
+          </div>
+     </div>
+
+     <script>
+          var userDataStr = '{{ user_json }}';
+          var dashboardDataStr = '{{ dashboard_json }}';
+          var baseUrl = '{{ base_url }}';
+
+          var user = JSON.parse(userDataStr);
+          var dashboardData = JSON.parse(dashboardDataStr);
+          var userRole = user.role || 'guest';
+
+          function getRoleLabel(role) {
+               var map = {
+                    'admin': 'مدیر',
+                    'teacher': 'استاد',
+                    'student': 'دانشجو'
+               };
+               return map[role] || 'ناشناس';
           }
 
-          var cardsContainer = document.getElementById('dashboard-cards');
-          if (!cardsContainer) return;
-
-          var cards = [];
-
-          if (role === 2) {
-               cards.push({ title: 'مدیریت کاربران', desc: 'مدیریت نقش و دسترسی کاربران', link: '{{ base_url }}/admin/users', btn: 'ورود' });
+          function getRoleClass(role) {
+               var map = {
+                    'admin': 'admin',
+                    'teacher': 'teacher',
+                    'student': 'student'
+               };
+               return map[role] || '';
           }
 
-          if (role >= 1) {
-               cards.push({ title: 'سوالات', desc: 'ایجاد، ویرایش و حذف سوالات', link: '{{ base_url }}/teacher/question', btn: 'مدیریت' });
-               cards.push({ title: 'آزمون‌ها', desc: 'ساخت و مدیریت آزمون‌ها', link: '{{ base_url }}/teacher/exam', btn: 'مدیریت' });
+          function renderWelcome() {
+               document.getElementById('user-fullname').textContent = user.fullname || 'کاربر';
+               var badge = document.getElementById('role-badge');
+               badge.textContent = getRoleLabel(userRole);
+               badge.className = 'role-badge ' + getRoleClass(userRole);
           }
 
-          if (role === 0) {
-               cards.push({ title: 'آزمون‌های من', desc: 'شرکت در آزمون‌ها و مشاهده نتایج', link: '{{ base_url }}/student/exams', btn: 'ورود' });
-          }
+          function renderStats() {
+               var container = document.getElementById('stats-container');
+               var html = '';
 
-          cards.push({ title: 'همه آزمون‌ها', desc: 'مشاهده تمام آزمون‌های منتشر شده', link: '{{ base_url }}/exams', btn: 'مشاهده' });
-
-          var html = '';
-          for (var i = 0; i < cards.length; i++) {
-               var c = cards[i];
-               html += '<div style="background:white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">';
-               html += '<h3>' + c.title + '</h3>';
-               html += '<p>' + c.desc + '</p>';
-               html += '<a href="' + base_url + c.link + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">' + c.btn + '</a>';
+               html += '<div class="stat-box">';
+               html += '<div class="number">' + (dashboardData.exams_count || 0) + '</div>';
+               html += '<div class="label">تعداد آزمون‌ها</div>';
                html += '</div>';
-          }
-          cardsContainer.innerHTML = html;
 
-          var links = document.querySelectorAll('[data-link]');
-          for (var j = 0; j < links.length; j++) {
-               var link = links[j];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
+               if (userRole === 'admin' || userRole === 'teacher') {
+                    html += '<div class="stat-box">';
+                    html += '<div class="number">' + (dashboardData.questions_count || 0) + '</div>';
+                    html += '<div class="label">تعداد سوالات</div>';
+                    html += '</div>';
                }
+
+               // تعداد کاربران (فقط ادمین)
+               if (userRole === 'admin') {
+                    html += '<div class="stat-box">';
+                    html += '<div class="number">' + (dashboardData.users_count || 0) + '</div>';
+                    html += '<div class="label">تعداد کاربران</div>';
+                    html += '</div>';
+               }
+
+               container.innerHTML = html;
           }
 
-          if (window.componentHandler) {
-               window.componentHandler.upgradeAllRegistered();
+          function renderActions() {
+               var container = document.getElementById('actions-container');
+               var html = '';
+
+               html += '<a href="' + baseUrl + '/exams" class="action-card">';
+               html += '<div class="title">مشاهده آزمون‌ها</div>';
+               html += '<div class="desc">لیست تمام آزمون‌ها</div>';
+               html += '</a>';
+
+               if (userRole === 'admin' || userRole === 'teacher') {
+                    html += '<a href="' + baseUrl + '/questions" class="action-card">';
+                    html += '<div class="title">مشاهده سوالات</div>';
+                    html += '<div class="desc">بانک سوالات</div>';
+                    html += '</a>';
+               }
+
+               if (userRole === 'admin' || userRole === 'teacher') {
+                    html += '<a href="' + baseUrl + '/exam/add" class="action-card">';
+                    html += '<div class="title">ساخت آزمون جدید</div>';
+                    html += '<div class="desc">ایجاد آزمون با سوالات</div>';
+                    html += '</a>';
+               }
+
+               if (userRole === 'admin') {
+                    html += '<a href="' + baseUrl + '/users" class="action-card">';
+                    html += '<div class="title">مدیریت کاربران</div>';
+                    html += '<div class="desc">ویرایش نقش و اطلاعات</div>';
+                    html += '</a>';
+               }
+
+               if (userRole === 'admin' || userRole === 'teacher') {
+                    html += '<a href="' + baseUrl + '/question/add" class="action-card">';
+                    html += '<div class="title">افزودن سوال</div>';
+                    html += '<div class="desc">ایجاد سوال جدید</div>';
+                    html += '</a>';
+               }
+
+               container.innerHTML = html;
           }
-     })();
-</script>
+          
+          window.onload = function() {
+               renderWelcome();
+               renderStats();
+               renderActions();
+               if (window.componentHandler) {
+                    window.componentHandler.upgradeAllRegistered();
+               }
+          };
+     </script>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>
