@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <title>مدیریت کاربران</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">👥 مدیریت کاربران</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                         <table class="mdl-data-table mdl-js-data-table" style="width:100%;">
+                         <thead>
+                              <tr>
+                                   <th class="mdl-data-table__cell--non-numeric">نام</th>
+                                   <th class="mdl-data-table__cell--non-numeric">ایمیل</th>
+                                   <th>نقش</th>
+                                   <th>عملیات</th>
+                              </tr>
+                         </thead>
+                         <tbody>
+                              {% for u in users %}
+                              <tr>
+                                   <td class="mdl-data-table__cell--non-numeric">{{ u.fullname }}</td>
+                                   <td class="mdl-data-table__cell--non-numeric">{{ u.email }}</td>
+                                   <td>{{ u.role }}</td>
+                                   <td>
+                                        <a href="{{ base_url }}/user/{{ u.id }}" class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">edit</i></a>
+                                   </td>
+                              </tr>
+                              {% endfor %}
+                         </tbody>
+                         </table>
+                    </div>
+               </div>
+          </div>
+     </div>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>

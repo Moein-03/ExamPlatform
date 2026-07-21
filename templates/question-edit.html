@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}ویرایش سوال{% endblock %}
+
+{% block content %}
+<div class="mdl-grid">
+     <div class="mdl-cell mdl-cell--8-col mdl-cell--2-offset">
+          <div class="mdl-card mdl-shadow--2dp">
+               <div class="mdl-card__title">
+                    <h2 class="mdl-card__title-text">ویرایش سوال</h2>
+               </div>
+               <div class="mdl-card__supporting-text">
+                    <form method="POST" action="{{ base_url }}/teacher/question/edit/{{ question.id }}">
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                              <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required>{{ question.question_text }}</textarea>
+                              <label class="mdl-textfield__label" for="question_text">متن سوال</label>
+                         </div>
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                              <select class="mdl-textfield__input" id="question_type" name="question_type">
+                                   <option value="single" {% if question.question_type == 'single' %}selected{% endif %}>تستی (یک گزینه)</option>
+                                   <option value="multiple" {% if question.question_type == 'multiple' %}selected{% endif %}>تستی (چند گزینه)</option>
+                                   <option value="descriptive" {% if question.question_type == 'descriptive' %}selected{% endif %}>تشریحی</option>
+                              </select>
+                              <label class="mdl-textfield__label" for="question_type">نوع سوال</label>
+                         </div>
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%;">
+                              <input class="mdl-textfield__input" type="number" id="score" name="score" value="{{ question.score }}" step="0.5" min="0.5">
+                              <label class="mdl-textfield__label" for="score">نمره</label>
+                         </div>
+                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره تغییرات</button>
+                         <a href="{{ base_url }}/teacher/question" class="mdl-button mdl-js-button mdl-button--raised">انصراف</a>
+                    </form>
+
+                    <hr>
+
+                    <h4>مدیریت گزینه‌ها</h4>
+                    <form method="POST" action="{{ base_url }}/teacher/answer/add/{{ question.id }}">
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 70%;">
+                              <input class="mdl-textfield__input" type="text" id="answer_text" name="answer_text" required>
+                              <label class="mdl-textfield__label" for="answer_text">متن گزینه</label>
+                         </div>
+                         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="is_correct">
+                              <input type="checkbox" id="is_correct" name="is_correct" class="mdl-checkbox__input" value="1">
+                              <span class="mdl-checkbox__label">صحیح</span>
+                         </label>
+                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">➕ افزودن گزینه</button>
+                    </form>
+
+                    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="width: 100%; margin-top: 20px;">
+                         <thead>
+                         <tr>
+                              <th class="mdl-data-table__cell--non-numeric">متن</th>
+                              <th>وضعیت</th>
+                              <th>عملیات</th>
+                         </tr>
+                         </thead>
+                         <tbody>
+                         {% for ans in answers %}
+                         <tr>
+                              <td class="mdl-data-table__cell--non-numeric">{{ ans.answer_text }}</td>
+                              <td>{% if ans.is_correct %}صحیح{% else %}نادرست{% endif %}</td>
+                              <td>
+                                   <form method="POST" action="{{ base_url }}/teacher/answer/delete/{{ ans.id }}" style="display: inline;">
+                                        <button type="submit" class="mdl-button mdl-js-button mdl-button--icon" style="color: red;" onclick="return confirm('آیا از حذف این گزینه اطمینان دارید؟')">
+                                             <i class="material-icons">delete</i>
+                                        </button>
+                                   </form>
+                              </td>
+                         </tr>
+                         {% else %}
+                         <tr>
+                              <td colspan="3" style="text-align: center;">هیچ گزینه‌ای تعریف نشده است.</td>
+                         </tr>
+                         {% endfor %}
+                         </tbody>
+                    </table>
+               </div>
+          </div>
+     </div>
+</div>
+{% endblock %}

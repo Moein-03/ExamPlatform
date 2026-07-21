@@ -25,44 +25,20 @@ def route(path, method, data, headers):
           item_id = int(path_parts.pop())
      clean_path = "/" + "/".join(path_parts) if path_parts else "/"
 
-     print(f"[DEBUG] clean_path: '{clean_path}', item_id: {item_id}")
-
      if method == "POST" and data and '_method' in data:
           method = data['_method'][0].upper()
 
      match (clean_path, method):
-          # ========== صفحه اصلی ==========
+          # ---------- عمومی ----------
           case ("/", "GET"):
                html = response.render_master("index.html", title="صفحه اصلی")
                return response.serve_html(html) if html else response._200("صفحه اصلی")
 
-          # ========== راه‌اندازی دیتابیس ==========
           case ("/setup", "GET"):
                db_setup.setup_database()
                return response._200("Database setup completed")
 
-          # ========== مسیر /exams ==========
-          case ("/exams", "GET"):
-               if not user_id:
-                    return response.redirect("/login")
-               if auth.is_admin(user_id):
-                    exams = exam_get_all.handle(None)
-                    exams_json = json.dumps(exams, ensure_ascii=False)
-                    html = response.render_master("admin/exams.html", {
-                         'exams_json': exams_json,
-                         'base_url': settings.BASE_URL
-                    }, "لیست آزمون‌ها")
-                    return response.serve_html(html)
-               
-               if auth.is_teacher(user_id):
-                    return response.redirect("/teacher/exam")
-               
-               if auth.is_student(user_id):
-                    return response.redirect("/student/exams")
-               
-               return response._403()
-
-          # ========== ورود ==========
+          # ---------- احراز هویت ----------
           case ("/login", "GET"):
                if user_id:
                     return response.redirect("/dashboard")
@@ -76,31 +52,15 @@ def route(path, method, data, headers):
                     cookie_header = cookie.set_cookie('session_id', sid, max_age=604800)
                     return response.redirect("/dashboard", {"Set-Cookie": cookie_header})
                else:
-                    context = {'error': 'نام کاربری یا رمز عبور اشتباه است'}
+                    context = {'error': 'نام کاربری یا رمز عبور اشتباه است', 'base_url': settings.BASE_URL}
                     html = response.render_master("login.html", context, "ورود")
                     return response.serve_html(html)
 
-          # ========== ثبت‌ نام ==========
           case ("/register", "GET"):
                if user_id:
                     return response.redirect("/dashboard")
                html = response.render_master("register.html", {'base_url': settings.BASE_URL}, "ثبت نام")
-               if html:
-                    return response.serve_html(html)
-               else:
-                    return response._200("""
-                         <h2>ثبت نام</h2>
-                         <form method="post" action="/ExamPlatform/register">
-                              <input name="fullname" placeholder="نام کامل"><br>
-                              <input name="email" placeholder="ایمیل"><br>
-                              <input name="password" type="password" placeholder="رمز"><br>
-                              <select name="role">
-                                   <option value="student">دانشجو</option>
-                                   <option value="teacher">استاد</option>
-                              </select><br>
-                              <button type="submit">ثبت نام</button>
-                         </form>
-                    """)
+               return response.serve_html(html) if html else response._200("فرم ثبت نام")
 
           case ("/register", "POST"):
                result = user_add.handle(data)
@@ -108,7 +68,6 @@ def route(path, method, data, headers):
                     return response.redirect("/login")
                return response._200(result)
 
-          # ========== خروج ==========
           case ("/logout", "GET"):
                if session_id:
                     auth.delete_session(session_id)
@@ -116,200 +75,292 @@ def route(path, method, data, headers):
                     return response.redirect("/", {"Set-Cookie": cookie_header})
                return response.redirect("/")
 
-          # ========== داشبورد ==========
+          # ---------- داشبورد ----------
           case ("/dashboard", "GET"):
                if not user_id:
                     return response._401()
-               html = response.render_master("dashboard.html", {'user': current_user}, "داشبورد")
+               # داده‌های داشبورد بر اساس نقش
+               dashboard_data = {}
+               if user_role == 'admin':
+                    dashboard_data['users_count'] = len(user_get_all.handle())
+                    dashboard_data['exams_count'] = len(exam_get_all.handle(None))
+                    dashboard_data['questions_count'] = len(question_get_all.handle())
+               elif user_role == 'teacher':
+                    dashboard_data['exams_count'] = len(exam_get_all.handle(user_id))
+                    dashboard_data['questions_count'] = len(question_get_all.handle(user_id))
+               elif user_role == 'student':
+                    dashboard_data['exams_count'] = len(exam_get_all.handle(None, only_published=True))
+               html = response.render_master("dashboard.html", {
+                    'user': current_user,
+                    'dashboard_data': dashboard_data,
+                    'base_url': settings.BASE_URL
+               }, "داشبورد")
                return response.serve_html(html)
 
-          # ========== بخش ادمین ==========
-          case ("/admin/users", "GET"):
-               if not user_id or not auth.is_admin(user_id):
+          # ---------- مدیریت کاربران  ----------
+          case ("/users", "GET"):
+               if not user_id or user_role != 'admin':
                     return response._403()
                users = user_get_all.handle()
-               html = response.render_master("admin/users.html", {'users': users}, "مدیریت کاربران")
+               html = response.render_master("users.html", {
+                    'users': users,
+                    'base_url': settings.BASE_URL
+               }, "مدیریت کاربران")
                return response.serve_html(html)
 
-          case ("/admin/user", "GET") if item_id is not None:
-               if not user_id or not auth.is_admin(user_id):
+          case ("/user", "GET") if item_id is not None:
+               if not user_id or user_role != 'admin':
                     return response._403()
                user = user_get_one.handle(item_id)
                if not user:
                     return response._404()
-               html = response.render_master("admin/user-edit.html", {'user': user}, "ویرایش کاربر")
+               html = response.render_master("user-edit.html", {
+                    'target_user': user,
+                    'base_url': settings.BASE_URL
+               }, "ویرایش کاربر")
                return response.serve_html(html)
 
-          case ("/admin/user", "POST") if item_id is not None:
-               if not user_id or not auth.is_admin(user_id):
+          case ("/user", "POST") if item_id is not None:
+               if not user_id or user_role != 'admin':
                     return response._403()
                user_update_role.handle(item_id, data)
-               return response.redirect("/admin/users")
+               return response.redirect("/users")
 
-          # ========== بخش استاد ==========
-          case ("/teacher/question", "GET"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          # ---------- مدیریت آزمون‌ها (یکپارچه) ----------
+          case ("/exams", "GET"):
+               if not user_id:
+                    return response.redirect("/login")
+               # دریافت داده بر اساس نقش
+               if user_role == 'admin':
+                    exams = exam_get_all.handle(None)
+               elif user_role == 'teacher':
+                    exams = exam_get_all.handle(user_id)
+               elif user_role == 'student':
+                    exams = exam_get_all.handle(None, only_published=True)
+               else:
                     return response._403()
-               questions = question_get_all.handle(user_id)
-               html = response.render_master("teacher/questions.html", {'questions': questions}, "بانک سوالات")
+               exams_json = json.dumps(exams, ensure_ascii=False)
+               html = response.render_master("exams.html", {
+                    'exams_json': exams_json,
+                    'user_role': user_role,
+                    'base_url': settings.BASE_URL
+               }, "لیست آزمون‌ها")
                return response.serve_html(html)
 
-          case ("/teacher/question/add", "GET"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/add", "GET"):
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-               html = response.render_master("teacher/question-form.html", title="افزودن سوال")
+               questions = question_get_all.handle(user_id if user_role == 'teacher' else None)
+               html = response.render_master("exam-form.html", {
+                    'questions': questions,
+                    'base_url': settings.BASE_URL
+               }, "ساخت آزمون جدید")
                return response.serve_html(html)
 
-          case ("/teacher/question/add", "POST"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               result = question_add.handle(data, user_id)
-               if "موفقیت" in result:
-                    return response.redirect("/teacher/question")
-               return response._200(result)
-
-          case ("/teacher/question/delete", "POST") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               question_delete.handle(item_id, user_id)
-               return response.redirect("/teacher/question")
-
-          case ("/teacher/question/import", "GET"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               html = response.render_master("teacher/question-import.html", title="بارگذاری سوالات")
-               return response.serve_html(html)
-
-          case ("/teacher/question/import", "POST"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               question_import.handle(data, user_id)
-               return response.redirect("/teacher/question")
-
-          case ("/teacher/question/export", "GET"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               return question_export.handle(user_id)
-
-          case ("/teacher/exam", "GET"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               exams = exam_get_all.handle(user_id)
-               html = response.render_master("teacher/exams.html", {'exams': exams}, "مدیریت آزمون‌ها")
-               return response.serve_html(html)
-
-          case ("/teacher/exam/add", "GET"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               questions = question_get_all.handle(user_id)
-               html = response.render_master("teacher/exam-form.html", {'questions': questions}, "ساخت آزمون جدید")
-               return response.serve_html(html)
-
-          case ("/teacher/exam/add", "POST"):
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/add", "POST"):
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                result = exam_add.handle(data, user_id)
                if "موفقیت" in result:
-                    return response.redirect("/teacher/exam")
+                    return response.redirect("/exams")
                return response._200(result)
 
-          case ("/teacher/exam", "GET") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
-                    return response._403()
-               exam = exam_get_one.handle(item_id, user_id)
+          case ("/exam", "GET") if item_id is not None:
+               if not user_id:
+                    return response._401()
+               exam = exam_get_one.handle(item_id, user_id, only_published=(user_role == 'student'))
                if not exam:
                     return response._404()
+               # دانشجو فقط آزمون‌های منتشر شده را ببیند
+               if user_role == 'student' and not exam.get('is_published'):
+                    return response._403()
                questions = question_get_by_exam.handle(item_id)
-               html = response.render_master("teacher/exam-detail.html", {'exam': exam, 'questions': questions}, "جزئیات آزمون")
+               html = response.render_master("exam-detail.html", {
+                    'exam': exam,
+                    'questions': questions,
+                    'user_role': user_role,
+                    'base_url': settings.BASE_URL
+               }, exam.get('title', 'جزئیات آزمون'))
                return response.serve_html(html)
 
-          case ("/teacher/exam/edit", "GET") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/edit", "GET") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                exam = exam_get_one.handle(item_id, user_id)
                if not exam:
                     return response._404()
-               questions = question_get_all.handle(user_id)
-               html = response.render_master("teacher/exam-form.html", {'exam': exam, 'questions': questions}, "ویرایش آزمون")
+               questions = question_get_all.handle(user_id if user_role == 'teacher' else None)
+               html = response.render_master("exam-form.html", {
+                    'exam': exam,
+                    'questions': questions,
+                    'base_url': settings.BASE_URL
+               }, "ویرایش آزمون")
                return response.serve_html(html)
 
-          case ("/teacher/exam/edit", "POST") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/edit", "POST") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                exam_update.handle(item_id, data, user_id)
-               return response.redirect("/teacher/exam")
+               return response.redirect("/exams")
 
-          case ("/teacher/exam/delete", "POST") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/delete", "POST") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                exam_delete.handle(item_id, user_id)
-               return response.redirect("/teacher/exam")
+               return response.redirect("/exams")
 
-          case ("/teacher/exam/publish", "POST") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/publish", "POST") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                exam_update.handle(item_id, {'is_published': '1'}, user_id)
-               return response.redirect("/teacher/exam")
+               return response.redirect("/exams")
 
-          case ("/teacher/exam/results", "GET") if item_id is not None:
-               if not user_id or not (auth.is_teacher(user_id) or auth.is_admin(user_id)):
+          case ("/exam/results", "GET") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                results = exam_results.handle(item_id)
                stats = report_stats.handle(item_id)
-               html = response.render_master("teacher/results.html", {'results': results, 'stats': stats}, "نتایج آزمون")
+               html = response.render_master("exam-results.html", {
+                    'results': results,
+                    'stats': stats,
+                    'base_url': settings.BASE_URL
+               }, "نتایج آزمون")
                return response.serve_html(html)
 
-          # ========== بخش دانشجو ==========
-          case ("/student/exams", "GET"):
-               if not user_id or not auth.is_student(user_id):
-                    return response._403()
-               exams = exam_get_all.handle(None, only_published=True)
-               html = response.render_master("student/exams.html", {'exams': exams}, "آزمون‌های من")
-               return response.serve_html(html)
-
-          case ("/student/exam/take", "GET") if item_id is not None:
-               if not user_id or not auth.is_student(user_id):
+          # ---------- شرکت در آزمون (دانشجو) ----------
+          case ("/exam/take", "GET") if item_id is not None:
+               if not user_id or user_role != 'student':
                     return response._403()
                exam = exam_get_one.handle(item_id, only_published=True)
                if not exam or not exam.get('is_published'):
                     return response._404()
                questions = question_get_by_exam.handle(item_id)
                questions_json = json.dumps(questions, ensure_ascii=False)
-               context = {
+               html = response.render_master("exam-take.html", {
                     'exam': exam,
                     'questions_json': questions_json,
                     'base_url': settings.BASE_URL
-               }
-               html = response.render_master("student/exam-take.html", context, exam.get('title', 'آزمون'))
+               }, exam.get('title', 'آزمون'))
                return response.serve_html(html)
 
-          case ("/student/exam/submit", "POST") if item_id is not None:
-               if not user_id or not auth.is_student(user_id):
+          case ("/exam/submit", "POST") if item_id is not None:
+               if not user_id or user_role != 'student':
                     return response._403()
                result = exam_submit.handle(item_id, user_id, data)
                if "موفقیت" in result:
-                    return response.redirect(f"/student/exam/feedback/{item_id}")
+                    return response.redirect(f"/exam/feedback/{item_id}")
                return response._200(result)
 
-          case ("/student/exam/feedback", "GET") if item_id is not None:
-               if not user_id or not auth.is_student(user_id):
+          case ("/exam/feedback", "GET") if item_id is not None:
+               if not user_id or user_role != 'student':
                     return response._403()
                feedback = exam_results.handle(item_id, user_id)
                stats = report_stats.handle(item_id)
                feedback_json = json.dumps(feedback, ensure_ascii=False)
                stats_json = json.dumps(stats, ensure_ascii=False)
-               context = {
+               html = response.render_master("exam-feedback.html", {
                     'feedback_json': feedback_json,
                     'stats_json': stats_json,
                     'base_url': settings.BASE_URL
-               }
-               html = response.render_master("student/exam-feedback.html", context, "بازخورد آزمون")
+               }, "بازخورد آزمون")
                return response.serve_html(html)
 
-          # ========== فایل‌های استاتیک ==========
+          # ---------- مدیریت سوالات (یکپارچه) ----------
+          case ("/questions", "GET"):
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               questions = question_get_all.handle(user_id if user_role == 'teacher' else None)
+               questions_json = json.dumps(questions, ensure_ascii=False)
+               html = response.render_master("questions.html", {
+                    'questions_json': questions_json,
+                    'user_role': user_role,
+                    'base_url': settings.BASE_URL
+               }, "بانک سوالات")
+               return response.serve_html(html)
+
+          case ("/question/add", "GET"):
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               html = response.render_master("question-form.html", {
+                    'base_url': settings.BASE_URL
+               }, "افزودن سوال")
+               return response.serve_html(html)
+
+          case ("/question/add", "POST"):
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               result = question_add.handle(data, user_id)
+               if "موفقیت" in result:
+                    return response.redirect("/questions")
+               return response._200(result)
+
+          case ("/question/edit", "GET") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               question = question_get_one.handle(item_id)
+               if not question:
+                    return response._404()
+               answers = answer_get_by_question.handle(item_id)
+               html = response.render_master("question-form.html", {
+                    'question': question,
+                    'answers': answers,
+                    'base_url': settings.BASE_URL
+               }, "ویرایش سوال")
+               return response.serve_html(html)
+
+          case ("/question/edit", "POST") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               result = question_update.handle(item_id, data)
+               if "موفقیت" in result:
+                    return response.redirect("/questions")
+               return response._200(result)
+
+          case ("/question/delete", "POST") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               question_delete.handle(item_id, user_id)
+               return response.redirect("/questions")
+
+          case ("/question/import", "GET"):
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               html = response.render_master("question-import.html", {
+                    'base_url': settings.BASE_URL
+               }, "بارگذاری سوالات")
+               return response.serve_html(html)
+
+          case ("/question/import", "POST"):
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               result = question_import.handle(data, user_id)
+               if "موفقیت" in result:
+                    return response.redirect("/questions")
+               return response._200(result)
+
+          case ("/question/export", "GET"):
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               return question_export.handle(user_id)
+
+          # ---------- مدیریت گزینه‌ها (برای سوالات تستی) ----------
+          case ("/answer/add", "POST") if item_id is not None:  # item_id = question_id
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               result = answer_add.handle(data, item_id)
+               return response.redirect(f"/question/edit/{item_id}")
+
+          case ("/answer/delete", "POST") if item_id is not None:  # item_id = answer_id
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               answer_delete.handle(item_id)
+               # برای بازگشت به صفحه ویرایش سوال، باید question_id را داشته باشید
+               # بهتر است از referer استفاده کنید یا در فرم hidden field بگذارید
+               return response.redirect(request.headers.get('Referer', '/questions'))
+
+          # ---------- استاتیک و ۴۰۴ ----------
           case _ if clean_path.startswith("/static/"):
                return response.serve_static_file(clean_path)
 
-          # ========== ۴۰۴ ==========
           case _:
                return response._404()
