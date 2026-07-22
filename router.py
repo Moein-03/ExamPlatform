@@ -302,12 +302,17 @@ def route(path, method, data, headers):
           case ("/question/add", "POST"):
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-                    
-               exam_id = int(data.get('exam_id', ['0'])[0])
-               if not exam_id:
-                    return response._200("لطفاً یک آزمون را انتخاب کنید.")
                
-               result = question_add.handle(data, exam_id)
+               answers_json = data.get('answers', [''])[0]
+               answers = []
+               if answers_json:
+                    try:
+                         answers = json.loads(answers_json)
+                    except:
+                         pass
+               data['answers'] = answers
+               
+               result = question_add.handle(data, 0)
                if "موفقیت" in result:
                     return response.redirect("/questions")
                return response._200(result)

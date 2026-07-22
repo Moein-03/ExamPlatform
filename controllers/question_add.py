@@ -6,7 +6,7 @@ def handle(data, exam_id):
      conn = None
      try:
           question_text = data.get('question_text', [''])[0].strip()
-          question_type = data.get('question_type', ['single'])[0]
+          question_type = data.get('question_type', ['true_false'])[0]
           score = float(data.get('score', ['1'])[0])
           answers = data.get('answers', [])
 
@@ -29,9 +29,19 @@ def handle(data, exam_id):
 
           question_id = cursor.lastrowid
 
-          if question_type in ['single', 'multiple']:
+          if question_type == 'true_false' or question_type == 'multiple':
                if not answers:
                     return "برای سوال تستی حداقل یک گزینه الزامی است."
+
+               if question_type == 'true_false':
+                    found_correct = False
+                    for ans in answers:
+                         if ans.get('is_correct', False):
+                              if not found_correct:
+                                   found_correct = True
+                              else:
+                                   ans['is_correct'] = False
+
                for ans in answers:
                     answer_text = ans.get('text', '').strip()
                     is_correct = 1 if ans.get('is_correct', False) else 0
