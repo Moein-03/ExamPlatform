@@ -294,7 +294,8 @@ def route(path, method, data, headers):
                     'mode': 'add',
                     'question_json': 'null',
                     'answers_json': 'null',
-                    'base_url': settings.BASE_URL
+                    'base_url': settings.BASE_URL,
+                    'error': ''
                }
                html = response.render_master("question-form.html", context, "افزودن سوال")
                return response.serve_html(html)
@@ -317,8 +318,11 @@ def route(path, method, data, headers):
                     return response.redirect("/questions")
                else:
                     context = {
-                         'error': result,
-                         'base_url': settings.BASE_URL
+                         'mode': 'add',
+                         'question_json': 'null',
+                         'answers_json': 'null',
+                         'base_url': settings.BASE_URL,
+                         'error': result
                     }
                     html = response.render_master("question-form.html", context, "افزودن سوال")
                     return response.serve_html(html)
@@ -339,7 +343,8 @@ def route(path, method, data, headers):
                     'question_json': question_json,
                     'answers_json': answers_json,
                     'question_id_json': question_id_json,
-                    'base_url': settings.BASE_URL
+                    'base_url': settings.BASE_URL,
+                    'error': '' 
                }
                html = response.render_master("question-edit.html", context, "ویرایش سوال")
                return response.serve_html(html)
@@ -361,7 +366,6 @@ def route(path, method, data, headers):
                if "موفقیت" in result or "ویرایش" in result:
                     return response.redirect("/questions")
                else:
-                    # برگرداندن خطا به صفحه ویرایش سوال
                     question = question_get_one.handle(item_id)
                     answers = answer_get_by_question.handle(item_id)
                     question_json = json.dumps(question, ensure_ascii=False)

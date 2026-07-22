@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; padding: 20px; }
+        body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
         .mdl-card { max-width: 700px; margin: 0 auto; width: 100%; }
         .mdl-textfield { width: 100%; }
         .btn-delete-answer { color: #f44336; cursor: pointer; background: none; border: none; }
@@ -16,6 +16,8 @@
         #answers-section { margin-top: 20px; }
         .mdl-radio, .mdl-checkbox { display: inline-block; margin: 0 8px; }
         .fixed-answers { background: #e8eaf6; padding: 12px; border-radius: 8px; margin-top: 8px; }
+        .error-message { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+        .error-message.hidden { display: none; }
     </style>
 </head>
 <body>
@@ -26,6 +28,10 @@
                     <h2 class="mdl-card__title-text">سوال جدید</h2>
                 </div>
                 <div class="mdl-card__supporting-text">
+                    <div id="error-container" class="error-message {{ 'hidden' if not error else '' }}">
+                        {{ error }}
+                    </div>
+
                     <form id="question-form" method="POST" action="{{ base_url }}/question/add">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                             <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
@@ -64,6 +70,15 @@
         var baseUrl = '{{ base_url }}';
         var tempAnswers = [];
 
+        var errorText = '{{ error }}'.trim();
+        if (errorText && errorText !== '') {
+            var errorContainer = document.getElementById('error-container');
+            if (errorContainer) {
+                errorContainer.textContent = errorText;
+                errorContainer.classList.remove('hidden');
+            }
+        }
+
         function handleQuestionTypeChange() {
             var qType = document.getElementById('question_type').value;
             var section = document.getElementById('answers-section');
@@ -78,18 +93,15 @@
 
             if (qType === 'true_false') {
                 document.getElementById('answers-title').textContent = 'گزینه های صحیح/غلط';
-                if (tempAnswers.length === 0 || tempAnswers.length !== 2) {
+                if (tempAnswers.length !== 2) {
                     tempAnswers = [
                         { text: '', is_correct: 0 },
                         { text: '', is_correct: 0 }
                     ];
                 }
                 renderTrueFalse();
-            } else {
+            } else if (qType === 'single') {
                 document.getElementById('answers-title').textContent = 'گزینه ها (فقط یک گزینه صحیح)';
-                if (tempAnswers.length === 0 || tempAnswers.some(a => a.hasOwnProperty('fixed'))) {
-                    tempAnswers = [];
-                }
                 renderSingle();
             }
 
@@ -206,7 +218,7 @@
                     alert('لطفاً هر دو گزینه (صحیح و غلط) را پر کنید.');
                     return;
                 }
-                var hasCorrect = tempAnswers.some(a => a.is_correct === 1);
+                var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
                 if (!hasCorrect) {
                     e.preventDefault();
                     alert('لطفاً یکی از گزینه ها را به عنوان صحیح انتخاب کنید.');
@@ -220,7 +232,7 @@
                     alert('برای سوال چند گزینه ای حداقل دو گزینه باید اضافه کنید.');
                     return;
                 }
-                var hasCorrect = tempAnswers.some(a => a.is_correct === 1);
+                var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
                 if (!hasCorrect) {
                     e.preventDefault();
                     alert('لطفاً یکی از گزینه ها را به عنوان صحیح انتخاب کنید.');
@@ -236,10 +248,6 @@
         });
 
         window.onload = function() {
-            tempAnswers = [
-                { text: '', is_correct: 0 },
-                { text: '', is_correct: 0 }
-            ];
             handleQuestionTypeChange();
             if (window.componentHandler) {
                 window.componentHandler.upgradeAllRegistered();

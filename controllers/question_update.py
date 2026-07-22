@@ -26,10 +26,12 @@ def handle(question_id, data):
                WHERE id = ?
           ''', (question_text, question_type, score, question_id))
 
-          # فقط اگر answers خالی نباشد، گزینه‌ها را به‌روز کن
-          if answers and question_type in ['true_false', 'single']:
+          if question_type in ['true_false', 'single']:
                # حذف گزینه‌های قبلی
                cursor.execute("DELETE FROM TBL_answers WHERE question_id = ?", (question_id,))
+               
+               if not answers:
+                    return "برای سوال تستی حداقل یک گزینه الزامی است."
                
                if question_type == 'true_false':
                     if len(answers) != 2:

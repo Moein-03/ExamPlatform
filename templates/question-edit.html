@@ -17,6 +17,7 @@
           .mdl-radio, .mdl-checkbox { display: inline-block; margin: 0 8px; }
           .fixed-answers { background: #e8eaf6; padding: 12px; border-radius: 8px; margin-top: 8px; }
           .error-message { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+          .error-message.hidden { display: none; }
      </style>
 </head>
 <body>
@@ -27,9 +28,10 @@
                          <h2 class="mdl-card__title-text">ویرایش سوال</h2>
                     </div>
                     <div class="mdl-card__supporting-text">
-                         {% if error %}
-                         <div class="error-message">{{ error }}</div>
-                         {% endif %}
+                         <div id="error-container" class="error-message {{ 'hidden' if not error else '' }}">
+                         {{ error }}
+                         </div>
+                         
                          <form id="question-form" method="POST">
                          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                               <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
@@ -64,7 +66,6 @@
           </div>
      </div>
 
-     <!-- ===== انتقال داده‌ها از طریق عنصر مخفی ===== -->
      <div id="app-data" 
           data-question='{{ question_json }}' 
           data-answers='{{ answers_json }}' 
@@ -88,6 +89,15 @@
 
                var tempAnswers = [];
                var questionType = question.question_type || 'true_false';
+
+               var errorText = '{{ error }}'.trim();
+               if (errorText && errorText !== '') {
+                    var errorContainer = document.getElementById('error-container');
+                    if (errorContainer) {
+                         errorContainer.textContent = errorText;
+                         errorContainer.classList.remove('hidden');
+                    }
+               }
 
                function initAnswers() {
                     if (questionType === 'true_false') {
