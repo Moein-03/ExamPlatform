@@ -3,9 +3,6 @@ import sqlite3
 import settings
 
 def handle(answer_id):
-     """
-     حذف گزینه
-     """
      try:
           conn = sqlite3.connect(str(settings.DB_PATH))
           cursor = conn.cursor()
@@ -13,6 +10,5 @@ def handle(answer_id):
           conn.commit()
           conn.close()
           return {"success": True}
-     
      except Exception as e:
           return {"error": str(e)}

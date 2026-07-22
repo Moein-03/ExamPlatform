@@ -5,9 +5,9 @@ import db_setup
 from controllers import (
      user_add, user_login, user_get_one, user_get_all, user_update_role,
      exam_add, exam_get_one, exam_get_all, exam_update, exam_delete,
-     exam_submit, exam_results,
-     question_add, question_get_all, question_get_by_exam, question_delete,
-     question_import, question_export,
+     exam_submit, exam_results, question_update,
+     question_add, question_get_all, question_get_by_exam, question_delete, question_get_one,
+     question_import, question_export, answer_get_by_question,
      report_stats
 )
 
@@ -345,8 +345,11 @@ def route(path, method, data, headers):
           case ("/question/delete", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-               question_delete.handle(item_id, user_id)
-               return response.redirect("/questions")
+               result = question_delete.handle(item_id, user_id)
+               if "موفقیت" in result or "حذف شد" in result:
+                    return response.redirect("/questions")
+               return response._200(result)
+
 
           case ("/question/import", "GET"):
                if not user_id or user_role not in ['admin', 'teacher']:
