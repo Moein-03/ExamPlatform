@@ -324,11 +324,15 @@ def route(path, method, data, headers):
                if not question:
                     return response._404()
                answers = answer_get_by_question.handle(item_id)
+               
                question_json = json.dumps(question, ensure_ascii=False)
                answers_json = json.dumps(answers, ensure_ascii=False)
+               question_id_json = json.dumps(question['id'])
+               
                context = {
                     'question_json': question_json,
                     'answers_json': answers_json,
+                    'question_id_json': question_id_json,
                     'base_url': settings.BASE_URL
                }
                html = response.render_master("question-edit.html", context, "ویرایش سوال")
@@ -337,8 +341,19 @@ def route(path, method, data, headers):
           case ("/question/edit", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
+               
+               # ===== پردازش گزینه‌ها (مشابه /question/add) =====
+               answers_json = data.get('answers', [''])[0]
+               answers = []
+               if answers_json:
+                    try:
+                         answers = json.loads(answers_json)
+                    except:
+                         pass
+               data['answers'] = answers
+               
                result = question_update.handle(item_id, data)
-               if "موفقیت" in result:
+               if "موفقیت" in result or "ویرایش" in result:
                     return response.redirect("/questions")
                return response._200(result)
 
@@ -346,7 +361,7 @@ def route(path, method, data, headers):
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                result = question_delete.handle(item_id, user_id)
-               if "موفقیت" in result or "حذف شد" in result:
+               if "موفقیت" in result or "حذف" in result:
                     return response.redirect("/questions")
                return response._200(result)
 
