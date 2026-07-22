@@ -10,7 +10,6 @@ def setup_database():
     conn = sqlite3.connect(str(settings.DB_PATH))
     cursor = conn.cursor()
 
-    # حذف جداول قدیمی (اگر وجود داشته باشند)
     cursor.execute("DROP TABLE IF EXISTS TBL_users")
     cursor.execute("DROP TABLE IF EXISTS TBL_exams")
     cursor.execute("DROP TABLE IF EXISTS TBL_questions")
