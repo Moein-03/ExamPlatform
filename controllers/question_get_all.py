@@ -3,15 +3,10 @@ import sqlite3
 import settings
 
 def handle(teacher_id=None, exam_id=None):
-     """
-     دریافت لیست سوالات
-     - اگر exam_id داده شود، سوالات آن آزمون را برمی‌گرداند
-     - اگر teacher_id داده شود، سوالات آزمون‌های آن استاد را برمی‌گرداند
-     """
      conn = sqlite3.connect(str(settings.DB_PATH))
      conn.row_factory = sqlite3.Row
      cursor = conn.cursor()
-     
+
      if exam_id:
           cursor.execute('''
                SELECT q.*, 
@@ -26,8 +21,8 @@ def handle(teacher_id=None, exam_id=None):
                     (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count,
                     e.title as exam_title
                FROM TBL_questions q
-               JOIN TBL_exams e ON q.exam_id = e.id
-               WHERE e.teacher_id = ?
+               LEFT JOIN TBL_exams e ON q.exam_id = e.id
+               WHERE e.teacher_id = ? OR q.exam_id IS NULL
                ORDER BY q.id DESC
           ''', (teacher_id,))
      else:
@@ -37,11 +32,11 @@ def handle(teacher_id=None, exam_id=None):
                     e.title as exam_title,
                     u.fullname as teacher_name
                FROM TBL_questions q
-               JOIN TBL_exams e ON q.exam_id = e.id
+               LEFT JOIN TBL_exams e ON q.exam_id = e.id
                LEFT JOIN TBL_users u ON e.teacher_id = u.id
                ORDER BY q.id DESC
           ''')
-     
+
      rows = cursor.fetchall()
      conn.close()
      return [dict(row) for row in rows]
