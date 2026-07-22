@@ -16,6 +16,7 @@
           #answers-section { margin-top: 20px; }
           .mdl-radio, .mdl-checkbox { display: inline-block; margin: 0 8px; }
           .fixed-answers { background: #e8eaf6; padding: 12px; border-radius: 8px; margin-top: 8px; }
+          .error-message { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
      </style>
 </head>
 <body>
@@ -26,6 +27,9 @@
                          <h2 class="mdl-card__title-text">ویرایش سوال</h2>
                     </div>
                     <div class="mdl-card__supporting-text">
+                         {% if error %}
+                         <div class="error-message">{{ error }}</div>
+                         {% endif %}
                          <form id="question-form" method="POST">
                          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                               <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
@@ -60,7 +64,7 @@
           </div>
      </div>
 
-     <!-- ===== انتقال داده‌ها به صورت JSON ===== -->
+     <!-- ===== انتقال داده‌ها از طریق عنصر مخفی ===== -->
      <div id="app-data" 
           data-question='{{ question_json }}' 
           data-answers='{{ answers_json }}' 
@@ -71,10 +75,16 @@
      <script>
           (function() {
                var dataElement = document.getElementById('app-data');
-               var question = JSON.parse(dataElement.getAttribute('data-question'));
-               var initialAnswers = JSON.parse(dataElement.getAttribute('data-answers')) || [];
-               var questionId = JSON.parse(dataElement.getAttribute('data-question-id'));
-               var baseUrl = dataElement.getAttribute('data-base-url');
+               var question, initialAnswers, questionId, baseUrl;
+               try {
+                    question = JSON.parse(dataElement.getAttribute('data-question'));
+                    initialAnswers = JSON.parse(dataElement.getAttribute('data-answers')) || [];
+                    questionId = JSON.parse(dataElement.getAttribute('data-question-id'));
+                    baseUrl = dataElement.getAttribute('data-base-url');
+               } catch (e) {
+                    alert('خطا در دریافت داده‌های سوال');
+                    return;
+               }
 
                var tempAnswers = [];
                var questionType = question.question_type || 'true_false';

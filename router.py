@@ -315,7 +315,13 @@ def route(path, method, data, headers):
                result = question_add.handle(data, 0)
                if "موفقیت" in result:
                     return response.redirect("/questions")
-               return response._200(result)
+               else:
+                    context = {
+                         'error': result,
+                         'base_url': settings.BASE_URL
+                    }
+                    html = response.render_master("question-form.html", context, "افزودن سوال")
+                    return response.serve_html(html)
 
           case ("/question/edit", "GET") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
@@ -342,7 +348,6 @@ def route(path, method, data, headers):
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                
-               # ===== پردازش گزینه‌ها (مشابه /question/add) =====
                answers_json = data.get('answers', [''])[0]
                answers = []
                if answers_json:
@@ -355,7 +360,22 @@ def route(path, method, data, headers):
                result = question_update.handle(item_id, data)
                if "موفقیت" in result or "ویرایش" in result:
                     return response.redirect("/questions")
-               return response._200(result)
+               else:
+                    # برگرداندن خطا به صفحه ویرایش سوال
+                    question = question_get_one.handle(item_id)
+                    answers = answer_get_by_question.handle(item_id)
+                    question_json = json.dumps(question, ensure_ascii=False)
+                    answers_json = json.dumps(answers, ensure_ascii=False)
+                    question_id_json = json.dumps(question['id'])
+                    context = {
+                         'question_json': question_json,
+                         'answers_json': answers_json,
+                         'question_id_json': question_id_json,
+                         'base_url': settings.BASE_URL,
+                         'error': result
+                    }
+                    html = response.render_master("question-edit.html", context, "ویرایش سوال")
+                    return response.serve_html(html)
 
           case ("/question/delete", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
