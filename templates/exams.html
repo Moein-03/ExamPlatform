@@ -23,7 +23,6 @@
                background: #f5f5f5;
           }
 
-          /* ===== کانتینر اصلی ===== */
           .mdl-grid {
                max-width: 100%;
                padding: 0;
@@ -78,6 +77,10 @@
                white-space: nowrap;
           }
 
+          th:last-child {
+               text-align: center !important;
+          }
+
           td:last-child {
                overflow: visible;
                white-space: nowrap;
@@ -89,7 +92,6 @@
                font-weight: bold;
           }
 
-          /* ===== استایل‌های دکمه‌ها ===== */
           .btn-icon { color: #3f51b5; }
           .btn-delete { color: #f44336; }
           .btn-take { color: #4caf50; }
@@ -105,7 +107,6 @@
                margin-bottom: 16px;
           }
 
-          /* ===== ریسپانسیو برای صفحات کوچک ===== */
           @media (max-width: 768px) {
                body {
                     padding: 10px;
@@ -180,7 +181,7 @@
                if (!container) return;
                var html = '';
                if (userRole === 'admin' || userRole === 'teacher') {
-                    html += '<a href="' + baseUrl + '/exam/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">➕ ساخت آزمون جدید</a>';
+                    html += '<a href="' + baseUrl + '/exam/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ساخت آزمون جدید</a>';
                }
                container.innerHTML = html;
           }
@@ -215,9 +216,9 @@
                          html += '</form>';
                     } else if (userRole === 'student') {
                          if (e.is_published) {
-                         html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
+                              html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
                          } else {
-                         html += '<span style="color:#999;">غیرفعال</span>';
+                              html += '<span style="color:#999;">غیرفعال</span>';
                          }
                     }
                     html += '</td>';

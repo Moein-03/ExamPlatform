@@ -160,11 +160,21 @@ def route(path, method, data, headers):
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
                questions = question_get_all.handle(user_id if user_role == 'teacher' else None)
-               html = response.render_master("exam-form.html", {
-                    'questions': questions,
+               students = user_get_all.handle(role='student')
+               
+               exam_json = 'null'
+               questions_json = json.dumps(questions, ensure_ascii=False)
+               students_json = json.dumps(students, ensure_ascii=False)
+               
+               context = {
+                    'exam_json': exam_json,
+                    'questions_json': questions_json,
+                    'students_json': students_json,
                     'base_url': settings.BASE_URL
-               }, "ساخت آزمون جدید")
+               }
+               html = response.render_master("exam-form.html", context, "ساخت آزمون جدید")
                return response.serve_html(html)
+
 
           case ("/exam/add", "POST"):
                if not user_id or user_role not in ['admin', 'teacher']:
@@ -199,11 +209,19 @@ def route(path, method, data, headers):
                if not exam:
                     return response._404()
                questions = question_get_all.handle(user_id if user_role == 'teacher' else None)
-               html = response.render_master("exam-form.html", {
-                    'exam': exam,
-                    'questions': questions,
+               students = user_get_all.handle(role='student')
+               
+               exam_json = json.dumps(exam, ensure_ascii=False)
+               questions_json = json.dumps(questions, ensure_ascii=False)
+               students_json = json.dumps(students, ensure_ascii=False)
+               
+               context = {
+                    'exam_json': exam_json,
+                    'questions_json': questions_json,
+                    'students_json': students_json,
                     'base_url': settings.BASE_URL
-               }, "ویرایش آزمون")
+               }
+               html = response.render_master("exam-form.html", context, "ویرایش آزمون")
                return response.serve_html(html)
 
           case ("/exam/edit", "POST") if item_id is not None:
@@ -215,8 +233,11 @@ def route(path, method, data, headers):
           case ("/exam/delete", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-               exam_delete.handle(item_id, user_id)
-               return response.redirect("/exams")
+               result = exam_delete.handle(item_id, user_id)
+               if "موفقیت" in result or "حذف" in result:
+                    return response.redirect("/exams")
+               else:
+                    return response._200(f"خطا در حذف آزمون: {result}")
 
           case ("/exam/publish", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:

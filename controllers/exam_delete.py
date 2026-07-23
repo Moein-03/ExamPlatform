@@ -2,17 +2,22 @@
 import sqlite3
 import settings
 
-def handle(exam_id, teacher_id):
-     dbc = sqlite3.connect(settings.DB_PATH)
-     cursor = dbc.cursor()
-     cursor.execute('SELECT teacher_id FROM exams WHERE id = ?', (exam_id,))
-     row = cursor.fetchone()
-     if not row or row[0] != teacher_id:
-          dbc.close()
-          return "دسترسی ندارید"
-     cursor.execute('DELETE FROM exam_questions WHERE exam_id = ?', (exam_id,))
-     cursor.execute('DELETE FROM exam_participants WHERE exam_id = ?', (exam_id,))
-     cursor.execute('DELETE FROM exams WHERE id = ?', (exam_id,))
-     dbc.commit()
-     dbc.close()
-     return "آزمون حذف شد"
+def handle(exam_id, teacher_id=None):
+     conn = None
+     try:
+          conn = sqlite3.connect(str(settings.DB_PATH))
+          cursor = conn.cursor()
+
+          if teacher_id:
+               cursor.execute("SELECT id FROM TBL_exams WHERE id = ? AND teacher_id = ?", (exam_id, teacher_id))
+               if not cursor.fetchone():
+                    return "شما دسترسی حذف این آزمون را ندارید."
+
+          cursor.execute("DELETE FROM TBL_exams WHERE id = ?", (exam_id,))
+          conn.commit()
+          return "آزمون با موفقیت حذف شد."
+     except Exception as e:
+          return f"خطا در حذف آزمون: {e}"
+     finally:
+          if conn:
+               conn.close()

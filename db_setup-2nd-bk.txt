@@ -41,9 +41,6 @@ def setup_database():
             duration INTEGER,
             teacher_id INTEGER,
             is_published INTEGER DEFAULT 0,
-            total_questions INTEGER DEFAULT 0,
-            total_score REAL DEFAULT 0,
-            is_random INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (teacher_id) REFERENCES TBL_users(id) ON DELETE SET NULL
         )
@@ -91,13 +88,13 @@ def setup_database():
         )
     ''')
 
-    # ===== جدول ارتباط سوالات با آزمون =====
+    # ===== جدول ارتباط سوالات با آزمون (در صورت نیاز) =====
     cursor.execute('''
         CREATE TABLE TBL_exam_questions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             exam_id INTEGER NOT NULL,
             question_id INTEGER NOT NULL,
-            order_num INTEGER DEFAULT 0,
+            order_number INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (exam_id) REFERENCES TBL_exams(id) ON DELETE CASCADE,
             FOREIGN KEY (question_id) REFERENCES TBL_questions(id) ON DELETE CASCADE,
@@ -128,4 +125,4 @@ def setup_database():
     conn.commit()
     conn.close()
     print("دیتابیس با موفقیت ساخته شد.")
-    print("کاربر ادمین: admin@exam.com / admin123")
+    print("کاربر ادمین admin: admin@exam.com / admin123")
