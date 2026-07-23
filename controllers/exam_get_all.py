@@ -20,16 +20,20 @@ def handle(user_id=None, only_published=False, student_id=None):
                SELECT e.*, u.fullname as teacher_name
                FROM TBL_exams e
                LEFT JOIN TBL_users u ON e.teacher_id = u.id
-               JOIN TBL_exam_users eu ON e.id = eu.exam_id
+               INNER JOIN TBL_exam_users eu ON e.id = eu.exam_id
                WHERE eu.user_id = ?
           '''
           params.append(student_id)
-
-     if only_published:
-          if student_id:
+          if only_published:
                query += " AND e.is_published = 1"
-          else:
-               query += " WHERE e.is_published = 1"
+     else:
+          if user_id:
+               conditions.append("e.teacher_id = ?")
+               params.append(user_id)
+          if only_published:
+               conditions.append("e.is_published = 1")
+          if conditions:
+               query += " WHERE " + " AND ".join(conditions)
 
      query += " ORDER BY e.id DESC"
      cursor.execute(query, params)
