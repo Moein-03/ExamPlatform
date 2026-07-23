@@ -277,8 +277,7 @@ def route(path, method, data, headers):
                result = exam_delete.handle(item_id, user_id)
                if "موفقیت" in result or "حذف" in result:
                     return response.redirect("/exams")
-               else:
-                    return response._200(f"خطا در حذف آزمون: {result}")
+               return response._200(f"خطا: {result}")
 
           case ("/exam/publish", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
@@ -450,7 +449,6 @@ def route(path, method, data, headers):
                if "موفقیت" in result or "حذف" in result:
                     return response.redirect("/questions")
                return response._200(result)
-
 
           case ("/question/import", "GET"):
                if not user_id or user_role not in ['admin', 'teacher']:
