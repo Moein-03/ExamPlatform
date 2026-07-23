@@ -136,18 +136,39 @@ def route(path, method, data, headers):
                return response.redirect("/users")
 
           # ---------- مدیریت آزمون‌ها (یکپارچه) ----------
+          #case ("/exams", "GET"):
+          #     if not user_id:
+          #          return response.redirect("/login")
+               # دریافت داده بر اساس نقش
+          #     if user_role == 'admin':
+          #          exams = exam_get_all.handle(None)
+          #     elif user_role == 'teacher':
+          #          exams = exam_get_all.handle(user_id)
+          #     elif user_role == 'student':
+          #          exams = exam_get_all.handle(None, only_published=True)
+          #     else:
+          #          return response._403()
+          #     exams_json = json.dumps(exams, ensure_ascii=False)
+          #     html = response.render_master("exams.html", {
+          #          'exams_json': exams_json,
+          #          'user_role': user_role,
+          #          'base_url': settings.BASE_URL
+          #     }, "لیست آزمون‌ها")
+          #     return response.serve_html(html)
+
           case ("/exams", "GET"):
                if not user_id:
                     return response.redirect("/login")
-               # دریافت داده بر اساس نقش
+
                if user_role == 'admin':
                     exams = exam_get_all.handle(None)
                elif user_role == 'teacher':
                     exams = exam_get_all.handle(user_id)
                elif user_role == 'student':
-                    exams = exam_get_all.handle(None, only_published=True)
+                    exams = exam_get_all.handle(None, only_published=True, student_id=user_id)
                else:
                     return response._403()
+               
                exams_json = json.dumps(exams, ensure_ascii=False)
                html = response.render_master("exams.html", {
                     'exams_json': exams_json,
@@ -184,22 +205,35 @@ def route(path, method, data, headers):
                     return response.redirect("/exams")
                return response._200(result)
 
+          #case ("/exam", "GET") if item_id is not None:
+          #     if not user_id:
+          #          return response._401()
+          #     exam = exam_get_one.handle(item_id, user_id, only_published=(user_role == 'student'))
+          #     if not exam:
+          #          return response._404()
+               # دانشجو فقط آزمون‌های منتشر شده را ببیند
+          #     if user_role == 'student' and not exam.get('is_published'):
+          #          return response._403()
+          #     questions = question_get_by_exam.handle(item_id)
+          #     html = response.render_master("exam-detail.html", {
+          #          'exam': exam,
+          #          'questions': questions,
+          #          'user_role': user_role,
+          #          'base_url': settings.BASE_URL
+          #     }, exam.get('title', 'جزئیات آزمون'))
+          #     return response.serve_html(html)
           case ("/exam", "GET") if item_id is not None:
-               if not user_id:
-                    return response._401()
-               exam = exam_get_one.handle(item_id, user_id, only_published=(user_role == 'student'))
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               exam = exam_get_one.handle(item_id, user_id if user_role == 'teacher' else None)
                if not exam:
                     return response._404()
-               # دانشجو فقط آزمون‌های منتشر شده را ببیند
-               if user_role == 'student' and not exam.get('is_published'):
-                    return response._403()
-               questions = question_get_by_exam.handle(item_id)
-               html = response.render_master("exam-detail.html", {
-                    'exam': exam,
-                    'questions': questions,
-                    'user_role': user_role,
+               exam_json = json.dumps(exam, ensure_ascii=False)
+               context = {
+                    'exam_json': exam_json,
                     'base_url': settings.BASE_URL
-               }, exam.get('title', 'جزئیات آزمون'))
+               }
+               html = response.render_master("exam-detail.html", context, "جزئیات آزمون")
                return response.serve_html(html)
 
           case ("/exam/edit", "GET") if item_id is not None:
@@ -223,6 +257,13 @@ def route(path, method, data, headers):
                }
                html = response.render_master("exam-form.html", context, "ویرایش آزمون")
                return response.serve_html(html)
+
+          # ===== غیرفعال کردن آزمون (تغییر به پیش‌نویس) =====
+          case ("/exam/unpublish", "POST") if item_id is not None:
+               if not user_id or user_role not in ['admin', 'teacher']:
+                    return response._403()
+               exam_update.handle(item_id, {'is_published': '0'}, user_id)
+               return response.redirect("/exams")
 
           case ("/exam/edit", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
