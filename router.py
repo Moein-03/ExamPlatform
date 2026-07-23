@@ -31,7 +31,7 @@ def route(path, method, data, headers):
      match (clean_path, method):
           # ---------- عمومی ----------
           case ("/", "GET"):
-               html = response.render_master("index.html", title="صفحه اصلی")
+               html = response.render_template("index.html")
                return response.serve_html(html) if html else response._200("صفحه اصلی")
 
           case ("/setup", "GET"):
@@ -43,7 +43,7 @@ def route(path, method, data, headers):
                if user_id:
                     return response.redirect("/dashboard")
                context = {'base_url': settings.BASE_URL, 'error': ''}
-               html = response.render_master("login.html", context, "ورود")
+               html = response.render_template("login.html", context)
                return response.serve_html(html)
 
           case ("/login", "POST"):
@@ -54,13 +54,13 @@ def route(path, method, data, headers):
                     return response.redirect("/dashboard", {"Set-Cookie": cookie_header})
                else:
                     context = {'error': 'نام کاربری یا رمز عبور اشتباه است', 'base_url': settings.BASE_URL}
-                    html = response.render_master("login.html", context, "ورود")
+                    html = response.render_template("login.html", context)
                     return response.serve_html(html)
 
           case ("/register", "GET"):
                if user_id:
                     return response.redirect("/dashboard")
-               html = response.render_master("register.html", {'base_url': settings.BASE_URL}, "ثبت نام")
+               html = response.render_template("register.html", {'base_url': settings.BASE_URL})
                return response.serve_html(html) if html else response._200("فرم ثبت نام")
 
           case ("/register", "POST"):

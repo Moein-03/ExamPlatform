@@ -1,23 +1,123 @@
-<div id="home-page">
-     <h2>به سامانه مدیریت آزمون‌ها خوش آمدید</h2>
-     <p>این صفحه اصلی پروژه است.</p>
-     <p>
-          <a href="#" data-link="{{ base_url }}/login" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ورود</a>
-          <a href="#" data-link="{{ base_url }}/register" class="mdl-button mdl-js-button mdl-button--raised">ثبت نام</a>
-     </p>
-     <p><a href="#" data-link="{{ base_url }}/exams">مشاهده آزمون‌ها</a></p>
-</div>
-
-<script>
-     (function() {
-          var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
-          var links = document.querySelectorAll('[data-link]');
-          for (var i = 0; i < links.length; i++) {
-               var link = links[i];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
-               }
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>سامانه مدیریت آزمون‌ها</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     
+     <style>
+          body {
+               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+               min-height: 100vh;
+               margin: 0;
+               font-family: Tahoma, sans-serif;
           }
-     })();
-</script>
+          .main-container {
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               min-height: 100vh;
+               padding: 20px;
+          }
+          .mdl-card {
+               width: 100%;
+               max-width: 520px;
+               border-radius: 12px;
+               overflow: hidden;
+               box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+          }
+          .hero-header {
+               background: white;
+               padding: 50px 40px 40px;
+               text-align: center;
+          }
+          .hero-header i {
+               font-size: 72px;
+               color: #3f51b5;
+               margin-bottom: 20px;
+          }
+          .hero-header h1 {
+               margin: 0 0 12px 0;
+               font-size: 2.1rem;
+               color: #3f51b5;
+          }
+          .hero-header p {
+               color: #666;
+               font-size: 1.1rem;
+               line-height: 1.6;
+          }
+          .card-actions {
+               padding: 40px;
+               background: #f8f9fa;
+               display: flex;
+               flex-direction: column;
+               align-items: center;
+               gap: 16px;
+          }
+          .mdl-button {
+               width: 100%;
+               max-width: 320px;
+               height: 56px;
+               font-size: 1.05rem;
+          }
+     </style>
+</head>
+<body>
+     <div class="main-container">
+          <div class="mdl-card mdl-shadow--6dp">
+
+               <div class="hero-header">
+                    <i class="material-icons">school</i>
+                    <h1>سامانه مدیریت آزمون‌ها</h1>
+                    <p>پلتفرم هوشمند برگزاری و مدیریت آزمون‌های آنلاین</p>
+               </div>
+
+               <div class="card-actions" id="action-buttons">
+                    <!-- JavaScript اینجا محتوا رو پر می‌کنه -->
+               </div>
+          </div>
+     </div>
+
+     <script>
+          (function() {
+               var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
+               var isLoggedIn = window.__DATA__ && window.__DATA__.user ? true : false;
+
+               var buttonsHTML = '';
+
+               if (isLoggedIn) {
+                    // کاربر وارد شده
+                    buttonsHTML = `
+                         <a href="{{ base_url }}/dashboard" 
+                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                         ورود به داشبورد
+                         </a>
+                         <a href="{{ base_url }}/exams" 
+                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                         <i class="material-icons" style="margin-left:8px;vertical-align:middle;">list_alt</i>
+                         مشاهده آزمون‌ها
+                         </a>
+                    `;
+               } else {
+                    // کاربر مهمان
+                    buttonsHTML = `
+                         <a href="{{ base_url }}/login" 
+                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                         ورود به سامانه
+                         </a>
+                         <a href="{{ base_url }}/register" 
+                         class="mdl-button mdl-js-button mdl-button--raised">
+                         ثبت نام جدید
+                         </a>
+                    `;
+               }
+
+               document.getElementById('action-buttons').innerHTML = buttonsHTML;
+          })();
+     </script>
+
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>
