@@ -98,7 +98,7 @@
                     var container = document.getElementById('action-buttons');
                     var html = '';
 
-                    html += '<a href="' + baseUrl + '/exam/edit/' + exam.id + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">✏️ ویرایش</a>';
+                    html += '<a href="' + baseUrl + '/exam/edit/' + exam.id + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ویرایش</a>';
 
                     if (exam.exam_status === 'پیش‌نویس') {
                          html += '<form method="POST" action="' + baseUrl + '/exam/publish/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از فعال کردن این آزمون اطمینان دارید؟\');">';
@@ -109,7 +109,6 @@
                          html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-unpublish">غیرفعال کردن</button>';
                          html += '</form>';
                     }
-                    // در وضعیت "به پایان رسیده" یا "نامشخص"، دکمه تغییر وضعیت نمایش داده نمی‌شود
 
                     html += '<form method="POST" action="' + baseUrl + '/exam/delete/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این آزمون اطمینان دارید؟\');">';
                     html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-delete">حذف</button>';

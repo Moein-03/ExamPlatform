@@ -1,4 +1,3 @@
-# controllers/exam_get_all.py
 import sqlite3
 import settings
 from datetime import datetime, timedelta
@@ -42,6 +41,7 @@ def handle(user_id=None, only_published=False, student_id=None):
      conn.close()
 
      now = datetime.now()
+     result = []
      for row in rows:
           exam = dict(row)
           if exam.get('is_published') == 0:

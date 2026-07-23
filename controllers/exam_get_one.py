@@ -1,4 +1,3 @@
-# controllers/exam_get_one.py
 import sqlite3
 import settings
 from datetime import datetime, timedelta
@@ -37,27 +36,27 @@ def handle(exam_id, teacher_id=None, only_published=False):
           exam['status_class'] = 'status-draft'
      else:
           start_time_str = exam.get('start_time')
-     if start_time_str:
-          try:
-               start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
-               start_time = start_time.replace(tzinfo=None)
-               duration_minutes = exam.get('duration', 0)
-               end_time = start_time + timedelta(minutes=duration_minutes)
-               
-               if now < start_time:
-                    exam['exam_status'] = 'فعال'
-                    exam['status_class'] = 'status-active'
-               elif start_time <= now <= end_time:
-                    exam['exam_status'] = 'در حال برگزاری'
-                    exam['status_class'] = 'status-ongoing'
-               else:
-                    exam['exam_status'] = 'به پایان رسیده'
-                    exam['status_class'] = 'status-ended'
-          except:
+          if start_time_str:
+               try:
+                    start_time = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+                    start_time = start_time.replace(tzinfo=None)
+                    duration_minutes = exam.get('duration', 0)
+                    end_time = start_time + timedelta(minutes=duration_minutes)
+                    
+                    if now < start_time:
+                         exam['exam_status'] = 'فعال'
+                         exam['status_class'] = 'status-active'
+                    elif start_time <= now <= end_time:
+                         exam['exam_status'] = 'در حال برگزاری'
+                         exam['status_class'] = 'status-ongoing'
+                    else:
+                         exam['exam_status'] = 'به پایان رسیده'
+                         exam['status_class'] = 'status-ended'
+               except:
+                    exam['exam_status'] = 'نامشخص'
+                    exam['status_class'] = 'status-unknown'
+          else:
                exam['exam_status'] = 'نامشخص'
                exam['status_class'] = 'status-unknown'
-     else:
-          exam['exam_status'] = 'نامشخص'
-          exam['status_class'] = 'status-unknown'
 
      return exam

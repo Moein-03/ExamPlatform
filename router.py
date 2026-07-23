@@ -262,8 +262,10 @@ def route(path, method, data, headers):
           case ("/exam/unpublish", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-               exam_update.handle(item_id, {'is_published': '0'}, user_id)
-               return response.redirect("/exams")
+               result = exam_update.handle(item_id, {'is_published': '0'}, user_id)
+               if "موفقیت" in result or "تغییر" in result:
+                    return response.redirect("/exams")
+               return response._200(f"خطا: {result}")
 
           case ("/exam/edit", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
@@ -282,8 +284,10 @@ def route(path, method, data, headers):
           case ("/exam/publish", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
-               exam_update.handle(item_id, {'is_published': '1'}, user_id)
-               return response.redirect("/exams")
+               result = exam_update.handle(item_id, {'is_published': '1'}, user_id)
+               if "موفقیت" in result or "تغییر" in result:
+                    return response.redirect("/exams")
+               return response._200(f"خطا: {result}")
 
           case ("/exam/results", "GET") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
