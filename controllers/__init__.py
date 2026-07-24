@@ -7,6 +7,7 @@ from . import user_get_one
 from . import user_get_all
 from . import user_update
 from . import user_update_role
+from . import user_delete
 from . import exam_add
 from . import exam_get_one
 from . import exam_get_all

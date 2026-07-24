@@ -23,10 +23,11 @@ def handle(data, teacher_id):
                if not q_text or not correct:
                     continue
                opts_json = json.dumps(opts) if opts else None
-               cursor.execute('''
+               query = '''
                     INSERT INTO questions (teacher_id, question_text, question_type, options, correct_answer, difficulty)
                     VALUES (?, ?, ?, ?, ?, ?)
-               ''', (teacher_id, q_text, q_type, opts_json, correct, difficulty))
+               '''
+               cursor.execute(query, (teacher_id, q_text, q_type, opts_json, correct, difficulty))
                count += 1
           dbc.commit()
           dbc.close()

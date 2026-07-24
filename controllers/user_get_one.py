@@ -6,11 +6,12 @@ def handle(user_id):
      conn = sqlite3.connect(str(settings.DB_PATH))
      conn.row_factory = sqlite3.Row
      cursor = conn.cursor()
-     cursor.execute('''
+     query = '''
           SELECT id, fullname, email, role, university_id, created_at
           FROM TBL_users
           WHERE id = ?
-     ''', (user_id,))
+     '''
+     cursor.execute(query, (user_id,))
      row = cursor.fetchone()
      conn.close()
      return dict(row) if row else None

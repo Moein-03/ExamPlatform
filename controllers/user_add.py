@@ -23,10 +23,11 @@ def handle(data):
         hashed = hash_password(password)
         conn = sqlite3.connect(str(settings.DB_PATH))
         cursor = conn.cursor()
-        cursor.execute('''
+        query = '''
             INSERT INTO TBL_users (fullname, email, password, role, university_id)
             VALUES (?, ?, ?, ?, ?)
-        ''', (fullname, email, hashed, role, university_id))
+        '''
+        cursor.execute(query, (fullname, email, hashed, role, university_id))
         conn.commit()
         conn.close()
         return "ثبت نام با موفقیت انجام شد"

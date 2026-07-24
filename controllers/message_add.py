@@ -17,8 +17,8 @@ def handle(data):
           if not user_name or not user_email or not user_message:
                return "نام، ایمیل و متن پیام الزامی است."
 
-          sql = '''INSERT INTO TBL_messages (user_name, user_email, user_message, subject) VALUES (?, ?, ?, ?)'''
-          cursor.execute(sql, (user_name, user_email, user_message, subject))
+          query = '''INSERT INTO TBL_messages (user_name, user_email, user_message, subject) VALUES (?, ?, ?, ?)'''
+          cursor.execute(query, (user_name, user_email, user_message, subject))
           conn.commit()
           return "پیام با موفقیت ارسال شد."
      except Exception as e:

@@ -1,43 +1,147 @@
-<div id="admin-user-edit-page">
-     <h2 id="edit-title">ویرایش کاربر</h2>
-     <form id="user-edit-form" method="POST">
-          <label>نقش:</label>
-          <select name="role" id="role-select" class="mdl-textfield__input" style="width:100%; padding:10px;">
-               <option value="0">دانشجو</option>
-               <option value="1">استاد</option>
-               <option value="2">ادمین</option>
-          </select>
-          <br><br>
-          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره</button>
-          <a href="#" data-link="{{ base_url }}/admin/users" class="mdl-button mdl-js-button">بازگشت</a>
-     </form>
-</div>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>ویرایش کاربر</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-card { max-width: 600px; margin: 0 auto; width: 100%; }
+          .mdl-card__supporting-text { width: 100%; box-sizing: border-box; }
+          .mdl-textfield { width: 100%; }
+          .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #eee; }
+          .info-label { width: 120px; font-weight: bold; color: #555; }
+          .info-value { flex: 1; }
+          .form-actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
+          .role-badge { padding: 3px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 500; }
+          .role-admin { background: #c62828; color: white; }
+          .role-teacher { background: #2e7d32; color: white; }
+          .role-student { background: #1565c0; color: white; }
+          .error-message { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+          .error-message.hidden { display: none; }
+          select.mdl-textfield__input { appearance: auto; padding: 8px; }
+     </style>
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">ویرایش کاربر</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                         <div id="error-container" class="error-message hidden">
+                         {{ error }}
+                         </div>
 
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-          var user = window.__DATA__ && window.__DATA__.user ? window.__DATA__.user : null;
+                         <div id="user-info"></div>
 
-          if (user) {
-               document.getElementById('edit-title').textContent = 'ویرایش کاربر: ' + (user.username || '');
-               var select = document.getElementById('role-select');
-               if (select) {
-                    select.value = user.role || 0;
+                         <form id="edit-form" method="POST">
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                              <input class="mdl-textfield__input" type="text" id="fullname" name="fullname" required>
+                              <label class="mdl-textfield__label" for="fullname">نام کامل</label>
+                         </div>
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                              <input class="mdl-textfield__input" type="email" id="email" name="email" required>
+                              <label class="mdl-textfield__label" for="email">ایمیل</label>
+                         </div>
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                              <input class="mdl-textfield__input" type="text" id="university_id" name="university_id">
+                              <label class="mdl-textfield__label" for="university_id">شماره دانشگاهی</label>
+                         </div>
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                              <select class="mdl-textfield__input" id="role" name="role">
+                                   <option value="admin">مدیر</option>
+                                   <option value="teacher">استاد</option>
+                                   <option value="student">دانشجو</option>
+                              </select>
+                              <label class="mdl-textfield__label" for="role">نقش</label>
+                         </div>
+                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                              <input class="mdl-textfield__input" type="password" id="password" name="password">
+                              <label class="mdl-textfield__label" for="password">رمز عبور جدید (اختیاری)</label>
+                         </div>
+
+                         <div class="form-actions">
+                              <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره تغییرات</button>
+                              <a href="{{ base_url }}/users" class="mdl-button mdl-js-button mdl-button--raised">انصراف</a>
+                         </div>
+                         </form>
+                    </div>
+               </div>
+          </div>
+     </div>
+
+     <div id="user-data" data-user='{{ user_json }}' data-base-url='{{ base_url }}' data-error='{{ error }}'></div>
+
+     <script>
+          (function() {
+               var dataElement = document.getElementById('user-data');
+               var user = JSON.parse(dataElement.getAttribute('data-user') || 'null');
+               var baseUrl = dataElement.getAttribute('data-base-url') || '';
+               var errorText = dataElement.getAttribute('data-error') || '';
+
+               var errorContainer = document.getElementById('error-container');
+               if (errorContainer && errorText) {
+                    errorContainer.textContent = errorText;
+                    errorContainer.classList.remove('hidden');
+               } else if (errorContainer) {
+                    errorContainer.classList.add('hidden');
                }
-          }
 
-          var links = document.querySelectorAll('[data-link]');
-          for (var i = 0; i < links.length; i++) {
-               var link = links[i];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
+               if (!user) {
+                    document.querySelector('.mdl-card__title-text').textContent = 'کاربر یافت نشد';
+                    return;
                }
-          }
 
-          var form = document.getElementById('user-edit-form');
-          if (form && user) {
-               form.action = '{{ base_url }}/admin/user/' + user.id;
-          }
-     })();
-</script>
+               var roleLabels = {
+                    'admin': 'مدیر',
+                    'teacher': 'استاد',
+                    'student': 'دانشجو'
+               };
+               var roleClasses = {
+                    'admin': 'role-admin',
+                    'teacher': 'role-teacher',
+                    'student': 'role-student'
+               };
+
+               function renderUserInfo() {
+                    var container = document.getElementById('user-info');
+                    var roleText = roleLabels[user.role] || user.role || 'نامشخص';
+                    var roleClass = roleClasses[user.role] || '';
+                    var html = '';
+                    html += '<div class="info-row"><span class="info-label">شناسه:</span><span class="info-value">' + user.id + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">نام:</span><span class="info-value">' + (user.fullname || '') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">ایمیل:</span><span class="info-value">' + (user.email || '') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">نقش فعلی:</span><span class="info-value"><span class="role-badge ' + roleClass + '">' + roleText + '</span></span></div>';
+                    html += '<div class="info-row"><span class="info-label">شماره دانشگاهی:</span><span class="info-value">' + (user.university_id || '—') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">تاریخ ثبت:</span><span class="info-value">' + (user.created_at || '—') + '</span></div>';
+                    container.innerHTML = html;
+               }
+
+               function fillForm() {
+                    document.getElementById('fullname').value = user.fullname || '';
+                    document.getElementById('email').value = user.email || '';
+                    document.getElementById('university_id').value = user.university_id || '';
+                    document.getElementById('role').value = user.role || 'student';
+                    document.getElementById('password').value = '';
+
+                    var form = document.getElementById('edit-form');
+                    form.action = baseUrl + '/user/' + user.id;
+               }
+
+               window.onload = function() {
+                    renderUserInfo();
+                    fillForm();
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
+               };
+          })();
+     </script>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>

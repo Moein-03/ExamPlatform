@@ -12,7 +12,7 @@ def handle():
      cursor = conn.cursor()
 
      try:
-          cursor.execute("""
+          query = '''
                SELECT 
                     e.id,
                     e.title,
@@ -27,7 +27,8 @@ def handle():
                FROM TBL_exams e
                INNER JOIN TBL_users u ON e.created_by = u.id
                ORDER BY e.created_at DESC
-          """)
+          '''
+          cursor.execute(query)
           
           exams = [dict(row) for row in cursor.fetchall()]
           return exams

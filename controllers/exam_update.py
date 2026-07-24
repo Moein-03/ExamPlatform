@@ -20,11 +20,12 @@ def handle(exam_id, data, teacher_id):
           cursor = conn.cursor()
 
           if title is None:
-               cursor.execute('''
+               query = '''
                     UPDATE TBL_exams
                     SET is_published = ?
                     WHERE id = ? AND teacher_id = ?
-               ''', (is_published, exam_id, teacher_id))
+               '''
+               cursor.execute(query, (is_published, exam_id, teacher_id))
                conn.commit()
                return "وضعیت آزمون تغییر کرد"
 
@@ -49,13 +50,14 @@ def handle(exam_id, data, teacher_id):
                               total_selected_score += row[0]
                if total_selected_score != total_score:
                     return f"مجموع نمرات سوالات ({total_selected_score}) با نمره کل ({total_score}) برابر نیست"
-
-          cursor.execute('''
+          
+          query = '''
                UPDATE TBL_exams
                SET title=?, description=?, start_time=?, duration=?, 
                     total_questions=?, total_score=?, is_random=?, is_published=?
                WHERE id=? AND teacher_id=?
-          ''', (title, description or '', start_time, int(duration), 
+          '''
+          cursor.execute(query, (title, description or '', start_time, int(duration), 
                total_q, total_score, is_random, is_published, exam_id, teacher_id))
 
           cursor.execute("DELETE FROM TBL_exam_questions WHERE exam_id = ?", (exam_id,))
@@ -64,17 +66,19 @@ def handle(exam_id, data, teacher_id):
           #if not is_random:
           for idx, qid in enumerate(question_ids):
                if qid.isdigit():
-                    cursor.execute('''
-                    INSERT INTO TBL_exam_questions (exam_id, question_id, order_num)
-                    VALUES (?, ?, ?)
-                    ''', (exam_id, int(qid), idx))
+                    query = '''
+                         INSERT INTO TBL_exam_questions (exam_id, question_id, order_num)
+                         VALUES (?, ?, ?)
+                    '''
+                    cursor.execute(query, (exam_id, int(qid), idx))
 
           for uid in student_ids:
                if uid.isdigit():
-                    cursor.execute('''
+                    query = '''
                          INSERT INTO TBL_exam_users (exam_id, user_id, status)
                          VALUES (?, ?, ?)
-                    ''', (exam_id, int(uid), 'pending'))
+                    '''
+                    cursor.execute(query, (exam_id, int(uid), 'pending'))
 
           conn.commit()
           return "آزمون با موفقیت ویرایش شد"

@@ -10,11 +10,12 @@ def handle(user_id, data):
           
           conn = sqlite3.connect(str(settings.DB_PATH))
           cursor = conn.cursor()
-          cursor.execute('''
+          query = '''
                UPDATE TBL_users
                SET role = ?
                WHERE id = ?
-          ''', (new_role, user_id))
+          '''
+          cursor.execute(query, (new_role, user_id))
           conn.commit()
           conn.close()
           return "نقش کاربر تغییر کرد"

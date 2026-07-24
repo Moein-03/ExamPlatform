@@ -11,11 +11,12 @@ def handle(question_id):
      cursor = conn.cursor()
      
      try:
-          cursor.execute('''
+          query = '''
                SELECT * FROM TBL_answers
                WHERE question_id = ?
                ORDER BY id ASC
-          ''', (question_id,))
+          '''
+          cursor.execute(query, (question_id,))
           rows = cursor.fetchall()
           conn.close()
           return [dict(row) for row in rows]

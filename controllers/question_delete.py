@@ -8,11 +8,12 @@ def handle(question_id, user_id=None):
           cursor = conn.cursor()
 
           if user_id:
-               cursor.execute('''
+               query = '''
                     SELECT q.id FROM TBL_questions q
                     LEFT JOIN TBL_exams e ON q.exam_id = e.id
                     WHERE q.id = ? AND (e.teacher_id = ? OR q.exam_id IS NULL)
-               ''', (question_id, user_id))
+               '''
+               cursor.execute(query, (question_id, user_id))
                if not cursor.fetchone():
                     conn.close()
                     return "شما دسترسی حذف این سوال را ندارید."

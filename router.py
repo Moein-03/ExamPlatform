@@ -3,7 +3,7 @@ import settings
 import json
 import db_setup
 from controllers import (
-     user_add, user_login, user_get_one, user_get_all, user_update_role,
+     user_add, user_login, user_get_one, user_get_all, user_update_role, user_delete,
      exam_add, exam_get_one, exam_get_all, exam_update, exam_delete,
      exam_submit, exam_results, question_update,
      question_add, question_get_all, question_get_by_exam, question_delete, question_get_one,
@@ -114,7 +114,7 @@ def route(path, method, data, headers):
                     'users_json': users_json,
                     'base_url': settings.BASE_URL
                }
-               html = response.render_master("users.html", context, "مدیریت کاربران")
+               html = response.render_master("admin/users.html", context, "مدیریت کاربران")
                return response.serve_html(html)
 
           case ("/user", "GET") if item_id is not None:
@@ -123,17 +123,41 @@ def route(path, method, data, headers):
                user = user_get_one.handle(item_id)
                if not user:
                     return response._404()
-               html = response.render_master("user-edit.html", {
-                    'target_user': user,
-                    'base_url': settings.BASE_URL
-               }, "ویرایش کاربر")
+               user_json = json.dumps(user, ensure_ascii=False)
+               context = {
+                    'user_json': user_json,
+                    'base_url': settings.BASE_URL,
+                    'error': ''
+               }
+               html = response.render_master("admin/user-edit.html", context, "ویرایش کاربر")
                return response.serve_html(html)
 
           case ("/user", "POST") if item_id is not None:
                if not user_id or user_role != 'admin':
                     return response._403()
-               user_update_role.handle(item_id, data)
-               return response.redirect("/users")
+               result = user_update_role.handle(item_id, data)
+               if "تغییر" in result or "موفقیت" in result:
+                    return response.redirect("/users")
+               else:
+                    user = user_get_one.handle(item_id)
+                    user_json = json.dumps(user, ensure_ascii=False)
+                    context = {
+                         'user_json': user_json,
+                         'base_url': settings.BASE_URL,
+                         'error': result
+                    }
+                    html = response.render_master("admin/user-edit.html", context, "ویرایش کاربر")
+                    return response.serve_html(html)
+
+          case ("/user/delete", "POST") if item_id is not None:
+               if not user_id or user_role != 'admin':
+                    return response._403()
+               if item_id == user_id:
+                    return response._200("نمی‌توانید حساب کاربری خودتان را حذف کنید.")
+               result = user_delete.handle(item_id)
+               if "موفقیت" in result or "حذف" in result:
+                    return response.redirect("/users")
+               return response._200(f"خطا: {result}")
 
           # ---------- مدیریت آزمون‌ها (یکپارچه) ----------
           #case ("/exams", "GET"):

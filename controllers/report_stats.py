@@ -5,12 +5,12 @@ import settings
 def handle(exam_id):
      conn = sqlite3.connect(str(settings.DB_PATH))
      cursor = conn.cursor()
-     
-     # تعداد شرکت‌کنندگان
-     cursor.execute('''
+
+     query = '''
           SELECT COUNT(*) FROM TBL_exam_users
           WHERE exam_id = ? AND status = 'completed'
-     ''', (exam_id,))
+     '''
+     cursor.execute(query, (exam_id,))
      total = cursor.fetchone()[0]
      
      if total == 0:
@@ -24,15 +24,14 @@ def handle(exam_id):
           }
      
      # آمار نمرات
-     cursor.execute('''
+     query = '''
           SELECT AVG(score), MAX(score), MIN(score)
           FROM TBL_exam_users
           WHERE exam_id = ? AND status = 'completed'
-     ''', (exam_id,))
+     '''
+     cursor.execute(query, (exam_id,))
      avg, high, low = cursor.fetchone()
      
-     # سوالات دشوار (برای نمایش در آینده)
-     # فعلاً خالی برمی‌گردانیم چون جدول پاسخ‌های دقیق نداریم
      conn.close()
      
      return {

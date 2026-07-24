@@ -1,55 +1,164 @@
-<div id="admin-users-page">
-     <h2>مدیریت کاربران</h2>
-     <div id="users-table-container">
-          <table style="width:100%; border-collapse:collapse;">
-               <thead>
-                    <tr>
-                         <th>نام</th>
-                         <th>نام خانوادگی</th>
-                         <th>نام کاربری</th>
-                         <th>نقش</th>
-                         <th>عملیات</th>
-                    </tr>
-               </thead>
-               <tbody id="users-tbody"></tbody>
-          </table>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>مدیریت کاربران</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-card { max-width: 1000px; margin: 0 auto; width: 100%; }
+          .mdl-card__supporting-text { width: 100%; box-sizing: border-box; }
+          .table-container { overflow-x: auto; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid #e0e0e0; }
+          th { background: #f5f5f5; font-weight: bold; color: #333; }
+          .btn-icon { color: #3f51b5; }
+          .btn-delete { color: #f44336; }
+          .role-badge { padding: 3px 12px; border-radius: 12px; font-size: 0.8em; font-weight: 500; }
+          .role-admin { background: #c62828; color: white; }
+          .role-teacher { background: #2e7d32; color: white; }
+          .role-student { background: #1565c0; color: white; }
+          .empty-msg { text-align: center; color: #999; padding: 30px 0; }
+          .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
+          .search-box { margin-bottom: 16px; }
+          .search-box input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+          @media (max-width: 600px) {
+               th, td { padding: 6px 8px; font-size: 0.85em; }
+               .mdl-button { font-size: 0.8em; padding: 0 8px; min-width: 30px; }
+          }
+     </style>
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">مدیریت کاربران</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                         <div class="header-actions">
+                         <span style="color:#666;">تعداد کاربران: <strong id="user-count">0</strong></span>
+                         </div>
+
+                         <div class="search-box">
+                         <input type="text" id="search-users" placeholder="جستجوی کاربر بر اساس نام یا ایمیل...">
+                         </div>
+
+                         <div class="table-container">
+                         <table>
+                              <thead>
+                                   <tr>
+                                        <th>#</th>
+                                        <th>نام</th>
+                                        <th>ایمیل</th>
+                                        <th>نقش</th>
+                                        <th>شماره دانشگاهی</th>
+                                        <th>تاریخ ثبت</th>
+                                        <th>عملیات</th>
+                                   </tr>
+                              </thead>
+                              <tbody id="users-tbody">
+                                   <tr><td colspan="7" style="text-align:center;">در حال بارگذاری...</td></tr>
+                              </tbody>
+                         </table>
+                         </div>
+
+                         <div style="margin-top: 20px;">
+                         <a href="{{ base_url }}/dashboard" class="mdl-button mdl-js-button mdl-button--raised">بازگشت به داشبورد</a>
+                         </div>
+                    </div>
+               </div>
+          </div>
      </div>
-</div>
 
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-          var users = window.__DATA__ && window.__DATA__.users ? window.__DATA__.users : [];
+     <div id="users-data" data-users='{{ users_json }}' data-base-url='{{ base_url }}'></div>
 
-          var tbody = document.getElementById('users-tbody');
-          if (!tbody) return;
+     <script>
+          (function() {
+               var dataElement = document.getElementById('users-data');
+               var users = JSON.parse(dataElement.getAttribute('data-users') || '[]');
+               var baseUrl = dataElement.getAttribute('data-base-url') || '';
 
-          var roleMap = {0: 'دانشجو', 1: 'استاد', 2: 'ادمین'};
-          var html = '';
-          for (var i = 0; i < users.length; i++) {
-               var u = users[i];
-               html += '<tr>';
-               html += '<td>' + (u.firstname || '') + '</td>';
-               html += '<td>' + (u.lastname || '') + '</td>';
-               html += '<td>' + (u.username || '') + '</td>';
-               html += '<td>' + (roleMap[u.role] || 'نامشخص') + '</td>';
-               html += '<td><a href="' + base_url + '/admin/user/' + u.id + '" class="mdl-button mdl-js-button mdl-button--icon"><i class="material-icons">edit</i></a></td>';
-               html += '</tr>';
-          }
+               var roleLabels = {
+                    'admin': 'مدیر',
+                    'teacher': 'استاد',
+                    'student': 'دانشجو'
+               };
+               var roleClasses = {
+                    'admin': 'role-admin',
+                    'teacher': 'role-teacher',
+                    'student': 'role-student'
+               };
 
-          if (users.length === 0) {
-               html = '<tr><td colspan="5" style="text-align:center;">هیچ کاربری یافت نشد</td></tr>';
-          }
+               function renderUsers(userList) {
+                    var tbody = document.getElementById('users-tbody');
+                    if (!tbody) return;
 
-          tbody.innerHTML = html;
+                    if (!userList || userList.length === 0) {
+                         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999;">هیچ کاربری یافت نشد</td></tr>';
+                         document.getElementById('user-count').textContent = '0';
+                         return;
+                    }
 
-          var links = document.querySelectorAll('[data-link]');
-          for (var j = 0; j < links.length; j++) {
-               var link = links[j];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
+                    document.getElementById('user-count').textContent = userList.length;
+
+                    var html = '';
+                    for (var i = 0; i < userList.length; i++) {
+                         var u = userList[i];
+                         var rowNum = i + 1;
+                         var roleText = roleLabels[u.role] || u.role || 'نامشخص';
+                         var roleClass = roleClasses[u.role] || '';
+
+                         html += '<tr>';
+                         html += '<td>' + rowNum + '</td>';
+                         html += '<td>' + (u.fullname || '') + '</td>';
+                         html += '<td>' + (u.email || '') + '</td>';
+                         html += '<td><span class="role-badge ' + roleClass + '">' + roleText + '</span></td>';
+                         html += '<td>' + (u.university_id || '—') + '</td>';
+                         html += '<td>' + (u.created_at || '—') + '</td>';
+                         html += '<td style="white-space:nowrap;">';
+                         html += '<a href="' + baseUrl + '/user/' + u.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon"><i class="material-icons">edit</i></a>';
+                         html += '<form method="POST" action="' + baseUrl + '/user/delete/' + u.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف کاربر ' + (u.fullname || '') + ' اطمینان دارید؟\');">';
+                         html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon btn-delete"><i class="material-icons">delete</i></button>';
+                         html += '</form>';
+                         html += '</td>';
+                         html += '</tr>';
+                    }
+                    tbody.innerHTML = html;
+
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
                }
-          }
-     })();
-</script>
+
+               var searchInput = document.getElementById('search-users');
+               if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                         var term = this.value.toLowerCase().trim();
+                         if (!term) {
+                         renderUsers(users);
+                         return;
+                         }
+                         var filtered = users.filter(function(u) {
+                         var name = (u.fullname || '').toLowerCase();
+                         var email = (u.email || '').toLowerCase();
+                         return name.includes(term) || email.includes(term);
+                         });
+                         renderUsers(filtered);
+                    });
+               }
+
+               window.onload = function() {
+                    renderUsers(users);
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
+               };
+          })();
+     </script>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>

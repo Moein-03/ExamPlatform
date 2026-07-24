@@ -45,12 +45,12 @@ def handle(data, teacher_id):
 
           conn = sqlite3.connect(str(settings.DB_PATH))
           cursor = conn.cursor()
-          sql = '''
+          query = '''
                INSERT INTO TBL_exams 
                (teacher_id, title, description, start_time, duration, total_questions, total_score, is_random)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           '''
-          cursor.execute(sql, (teacher_id, title, description, start_time, int(duration), total_q, total_score, is_random))
+          cursor.execute(query, (teacher_id, title, description, start_time, int(duration), total_q, total_score, is_random))
           exam_id = cursor.lastrowid
 
           #if not is_random:

@@ -21,10 +21,11 @@ def handle(data):
      cursor = conn.cursor()
 
      hashed_password = hash_password(password)
-     cursor.execute('''
+     query = '''
           SELECT * FROM TBL_users
           WHERE email = ? AND password = ?
-     ''', (username, hashed_password))
+     '''
+     cursor.execute(query, (username, hashed_password))
      
      row = cursor.fetchone()
      conn.close()

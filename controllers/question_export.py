@@ -8,10 +8,11 @@ def handle(teacher_id):
      dbc = sqlite3.connect(settings.DB_PATH)
      dbc.row_factory = sqlite3.Row
      cursor = dbc.cursor()
-     cursor.execute('''
+     query = '''
           SELECT id, question_text, question_type, options, correct_answer, difficulty
           FROM questions WHERE teacher_id = ?
-     ''', (teacher_id,))
+     '''
+     cursor.execute(query, (teacher_id,))
      rows = cursor.fetchall()
      dbc.close()
      questions = []

@@ -11,10 +11,11 @@ def handle(data, question_id):
                return {"error": "متن گزینه الزامی است."}
           conn = sqlite3.connect(str(settings.DB_PATH))
           cursor = conn.cursor()
-          cursor.execute('''
+          query = '''
                INSERT INTO TBL_answers (question_id, answer_text, is_correct)
                VALUES (?, ?, ?)
-          ''', (question_id, answer_text, is_correct))
+          '''
+          cursor.execute(query, (question_id, answer_text, is_correct))
           conn.commit()
           conn.close()
           return {"success": True}

@@ -24,11 +24,11 @@ def handle(user_id, data):
 
           if new_password:
                hashed = hash_password(new_password)
-               sql = '''UPDATE TBL_users SET fullname=?, email=?, password=?, role=?, university_id=? WHERE id=?'''
-               cursor.execute(sql, (fullname, email, hashed, role, university_id, user_id))
+               query = '''UPDATE TBL_users SET fullname=?, email=?, password=?, role=?, university_id=? WHERE id=?'''
+               cursor.execute(query, (fullname, email, hashed, role, university_id, user_id))
           else:
-               sql = '''UPDATE TBL_users SET fullname=?, email=?, role=?, university_id=? WHERE id=?'''
-               cursor.execute(sql, (fullname, email, role, university_id, user_id))
+               query = '''UPDATE TBL_users SET fullname=?, email=?, role=?, university_id=? WHERE id=?'''
+               cursor.execute(query, (fullname, email, role, university_id, user_id))
 
           conn.commit()
           return "کاربر با موفقیت به‌روزرسانی شد."

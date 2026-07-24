@@ -20,14 +20,15 @@ def handle(exam_id, student_id, data):
           if participant[1] == 'completed':
                return "شما قبلاً در این آزمون شرکت کرده‌اید"
 
-          cursor.execute('''
+          query = '''
                SELECT q.id, q.question_type, a.answer_text as correct_answer
                FROM TBL_questions q
                JOIN TBL_exam_questions eq ON eq.question_id = q.id
                LEFT JOIN TBL_answers a ON a.question_id = q.id AND a.is_correct = 1
                WHERE eq.exam_id = ?
                ORDER BY eq.order_num
-          ''', (exam_id,))
+          '''
+          cursor.execute(query, (exam_id,))
           questions = cursor.fetchall()
 
           total_score = 0
@@ -49,22 +50,23 @@ def handle(exam_id, student_id, data):
                     if student_answer:
                          is_correct = 0.5
 
-               cursor.execute('''
+               query = '''
                     INSERT OR REPLACE INTO TBL_exam_users (exam_id, user_id, status, score)
                     VALUES (?, ?, ?, ?)
-               ''', (exam_id, student_id, 'completed', 0))  # موقتاً 0، بعداً به‌روز می‌شود
+               '''
+               cursor.execute(query, (exam_id, student_id, 'completed', 0))
 
                if is_correct:
                     total_score += 1
 
           # محاسبه نمره نهایی (از ۱۰۰)
           final_score = (total_score / total_questions * 100) if total_questions > 0 else 0
-
-          cursor.execute('''
+          query = '''
                UPDATE TBL_exam_users
                SET score = ?, status = 'completed', completed_at = datetime('now')
                WHERE exam_id = ? AND user_id = ?
-          ''', (final_score, exam_id, student_id))
+          '''
+          cursor.execute(query, (final_score, exam_id, student_id))
 
           conn.commit()
           return f"آزمون با موفقیت ثبت شد. نمره شما: {final_score:.1f}%"

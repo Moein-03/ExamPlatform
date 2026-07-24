@@ -20,11 +20,12 @@ def handle(question_id, data):
           conn = sqlite3.connect(str(settings.DB_PATH))
           cursor = conn.cursor()
 
-          cursor.execute('''
+          query = '''
                UPDATE TBL_questions
                SET question_text = ?, question_type = ?, score = ?
                WHERE id = ?
-          ''', (question_text, question_type, score, question_id))
+          '''
+          cursor.execute(query, (question_text, question_type, score, question_id))
 
           if question_type in ['true_false', 'single']:
                # حذف گزینه‌های قبلی
@@ -50,10 +51,11 @@ def handle(question_id, data):
                     answer_text = ans.get('text', '').strip()
                     is_correct = 1 if ans.get('is_correct', False) else 0
                     if answer_text:
-                         cursor.execute('''
-                         INSERT INTO TBL_answers (question_id, answer_text, is_correct)
-                         VALUES (?, ?, ?)
-                         ''', (question_id, answer_text, is_correct))
+                         query = '''
+                              INSERT INTO TBL_answers (question_id, answer_text, is_correct)
+                              VALUES (?, ?, ?)
+                         '''
+                         cursor.execute(query, (question_id, answer_text, is_correct))
 
           conn.commit()
           return "سوال با موفقیت ویرایش شد."

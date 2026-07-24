@@ -8,15 +8,16 @@ def handle(teacher_id=None, exam_id=None):
      cursor = conn.cursor()
 
      if exam_id:
-          cursor.execute('''
+          query = '''
                SELECT q.*, 
                     (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count
                FROM TBL_questions q
                WHERE q.exam_id = ?
                ORDER BY q.id ASC
-          ''', (exam_id,))
+          '''
+          cursor.execute(query, (exam_id,))
      elif teacher_id:
-          cursor.execute('''
+          query = '''
                SELECT q.*, 
                     (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count,
                     e.title as exam_title
@@ -24,9 +25,10 @@ def handle(teacher_id=None, exam_id=None):
                LEFT JOIN TBL_exams e ON q.exam_id = e.id
                WHERE e.teacher_id = ? OR q.exam_id IS NULL
                ORDER BY q.id DESC
-          ''', (teacher_id,))
+          '''
+          cursor.execute(query, (teacher_id,))
      else:
-          cursor.execute('''
+          query = '''
                SELECT q.*, 
                     (SELECT COUNT(*) FROM TBL_answers WHERE question_id = q.id) as answer_count,
                     e.title as exam_title,
@@ -35,7 +37,8 @@ def handle(teacher_id=None, exam_id=None):
                LEFT JOIN TBL_exams e ON q.exam_id = e.id
                LEFT JOIN TBL_users u ON e.teacher_id = u.id
                ORDER BY q.id DESC
-          ''')
+          '''
+          cursor.execute(query)
 
      rows = cursor.fetchall()
      conn.close()

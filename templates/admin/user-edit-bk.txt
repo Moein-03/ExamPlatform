@@ -1,0 +1,43 @@
+<div id="admin-user-edit-page">
+     <h2 id="edit-title">ویرایش کاربر</h2>
+     <form id="user-edit-form" method="POST">
+          <label>نقش:</label>
+          <select name="role" id="role-select" class="mdl-textfield__input" style="width:100%; padding:10px;">
+               <option value="0">دانشجو</option>
+               <option value="1">استاد</option>
+               <option value="2">ادمین</option>
+          </select>
+          <br><br>
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ذخیره</button>
+          <a href="#" data-link="{{ base_url }}/admin/users" class="mdl-button mdl-js-button">بازگشت</a>
+     </form>
+</div>
+
+<script>
+     (function() {
+          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+          var user = window.__DATA__ && window.__DATA__.user ? window.__DATA__.user : null;
+
+          if (user) {
+               document.getElementById('edit-title').textContent = 'ویرایش کاربر: ' + (user.username || '');
+               var select = document.getElementById('role-select');
+               if (select) {
+                    select.value = user.role || 0;
+               }
+          }
+
+          var links = document.querySelectorAll('[data-link]');
+          for (var i = 0; i < links.length; i++) {
+               var link = links[i];
+               var path = link.getAttribute('data-link');
+               if (path) {
+                    link.href = base_url + path;
+               }
+          }
+
+          var form = document.getElementById('user-edit-form');
+          if (form && user) {
+               form.action = '{{ base_url }}/admin/user/' + user.id;
+          }
+     })();
+</script>
