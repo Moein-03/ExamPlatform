@@ -10,7 +10,8 @@ def handle(exam_id, data, teacher_id):
           duration = data.get('duration', ['30'])[0] if data.get('duration') else None
           start_time = data.get('start_time', [''])[0].strip() if data.get('start_time') else None
           total_score = float(data.get('total_score', ['0'])[0]) if data.get('total_score') else None
-          is_random = 1 if data.get('is_random', ['0'])[0] == 'true' else 0
+          #is_random = 1 if data.get('is_random', ['0'])[0] == 'true' else 0
+          is_random = False
           is_published = int(data.get('is_published', ['0'])[0])
           question_ids = data.get('question_ids', [])
           student_ids = data.get('student_ids', [])
@@ -35,10 +36,10 @@ def handle(exam_id, data, teacher_id):
                return "نمره کل باید بزرگتر از صفر باشد"
 
           total_q = len(question_ids) if question_ids else 0
-          if total_q == 0 and not is_random:
+          if total_q == 0:
                return "حداقل یک سوال باید انتخاب شود"
 
-          if not is_random and question_ids:
+          if question_ids:
                total_selected_score = 0
                for qid in question_ids:
                     if qid.isdigit():
@@ -60,13 +61,13 @@ def handle(exam_id, data, teacher_id):
           cursor.execute("DELETE FROM TBL_exam_questions WHERE exam_id = ?", (exam_id,))
           cursor.execute("DELETE FROM TBL_exam_users WHERE exam_id = ?", (exam_id,))
 
-          if not is_random:
-               for idx, qid in enumerate(question_ids):
-                    if qid.isdigit():
-                         cursor.execute('''
-                         INSERT INTO TBL_exam_questions (exam_id, question_id, order_num)
-                         VALUES (?, ?, ?)
-                         ''', (exam_id, int(qid), idx))
+          #if not is_random:
+          for idx, qid in enumerate(question_ids):
+               if qid.isdigit():
+                    cursor.execute('''
+                    INSERT INTO TBL_exam_questions (exam_id, question_id, order_num)
+                    VALUES (?, ?, ?)
+                    ''', (exam_id, int(qid), idx))
 
           for uid in student_ids:
                if uid.isdigit():

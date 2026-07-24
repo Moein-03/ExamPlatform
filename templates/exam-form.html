@@ -75,7 +75,7 @@
                background: #f8f9fa;
                border-radius: 12px;
                border: 1px solid #e0e0e0;
-               max-height: 280px; /* کاهش ارتفاع */
+               max-height: 280px;
                overflow-y: auto;
           }
           
@@ -160,21 +160,7 @@
                               </div>
                          </div>
 
-                         <p style="margin: 22px 0 10px;">
-                              <label style="font-size: 1.05rem;">
-                                   <input type="checkbox" name="is_random" value="true" id="is_random" onchange="toggleRandom()">
-                                   انتخاب تصادفی سوالات
-                              </label>
-                         </p>
-                         
-                         <div id="random-questions-count" style="display:none; margin-bottom: 20px;">
-                              <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                   <input class="mdl-textfield__input" type="number" id="total_questions" name="total_questions" value="5">
-                                   <label class="mdl-textfield__label" for="total_questions">تعداد سوالات (تصادفی)</label>
-                              </div>
-                         </div>
-
-                         <h4>انتخاب سوالات (در صورت عدم انتخاب تصادفی)</h4>
+                         <h4>انتخاب سوالات</h4>
                          <div class="search-box">
                               <input type="text" id="search-questions" class="mdl-textfield__input" placeholder="جستجوی سوال..." style="width:100%; padding:11px; border-radius:8px; border:1px solid #ddd;">
                          </div>
@@ -218,11 +204,6 @@
                     document.getElementById('start_time').value = exam.start_time || '';
                     document.getElementById('duration').value = exam.duration || 30;
                     document.getElementById('total_score').value = exam.total_score || 10;
-                    if (exam.is_random) {
-                         document.getElementById('is_random').checked = true;
-                         document.getElementById('total_questions').value = exam.total_questions || 5;
-                         toggleRandom();
-                    }
                }
 
                var form = document.getElementById('exam-form');
@@ -246,7 +227,7 @@
                          for (var i = 0; i < questions.length; i++) {
                               var q = questions[i];
                               var checked = selectedIds[q.id] ? 'checked' : '';
-                              html += `<p data-text="${(q.question_text || '').toLowerCase()}"><label><input type="checkbox" name="question_ids" value="${q.id}" ${checked}> ${(q.question_text || '')} (نمره: ${q.score})</label></p>`;
+                              html += '<p data-text="' + (q.question_text || '').toLowerCase() + '"><label><input type="checkbox" name="question_ids" value="' + q.id + '" ' + checked + '> ' + (q.question_text || '') + ' (نمره: ' + q.score + ')</label></p>';
                          }
                          qContainer.innerHTML = html;
                     } else {
@@ -262,13 +243,13 @@
                          if (exam && exam.student_ids) {
                               for (var m = 0; m < exam.student_ids.length; m++) {
                                    selectedStudents[exam.student_ids[m]] = true;
-                              }
+                         }
                          }
                          var html2 = '';
                          for (var j = 0; j < students.length; j++) {
                               var s = students[j];
                               var checked2 = selectedStudents[s.id] ? 'checked' : '';
-                              html2 += `<p data-text="${(s.fullname || '').toLowerCase() + ' ' + (s.email || '').toLowerCase()}"><label><input type="checkbox" name="student_ids" value="${s.id}" ${checked2}> ${(s.fullname || '')} (${s.email})</label></p>`;
+                              html2 += '<p data-text="' + (s.fullname || '').toLowerCase() + ' ' + (s.email || '').toLowerCase() + '"><label><input type="checkbox" name="student_ids" value="' + s.id + '" ' + checked2 + '> ' + (s.fullname || '') + ' (' + s.email + ')</label></p>';
                          }
                          sContainer.innerHTML = html2;
                     } else {
@@ -304,27 +285,6 @@
                     });
                }
 
-               window.toggleRandom = function() {
-                    var isRandom = document.getElementById('is_random').checked;
-                    var randomDiv = document.getElementById('random-questions-count');
-                    var questionCheckboxes = document.getElementById('questions-checkboxes');
-                    if (isRandom) {
-                         randomDiv.style.display = 'block';
-                         questionCheckboxes.style.display = 'none';
-                         var inputs = questionCheckboxes.querySelectorAll('input[type="checkbox"]');
-                         for (var i = 0; i < inputs.length; i++) {
-                              inputs[i].disabled = true;
-                         }
-                    } else {
-                         randomDiv.style.display = 'none';
-                         questionCheckboxes.style.display = 'block';
-                         var inputs = questionCheckboxes.querySelectorAll('input[type="checkbox"]');
-                         for (var i = 0; i < inputs.length; i++) {
-                              inputs[i].disabled = false;
-                         }
-                    }
-               };
-               toggleRandom();
 
                if (window.componentHandler) {
                     window.componentHandler.upgradeAllRegistered();

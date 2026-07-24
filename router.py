@@ -334,6 +334,9 @@ def route(path, method, data, headers):
                if not exam or not exam.get('is_published'):
                     return response._404()
                questions = question_get_by_exam.handle(item_id)
+               import random
+               if exam.get('is_random', 0) == 1:
+                    random.shuffle(questions)
                import datetime
                from datetime import datetime as dt
                now = dt.now()
@@ -349,6 +352,7 @@ def route(path, method, data, headers):
                          time_left = exam.get('duration', 0) * 60
                else:
                     time_left = exam.get('duration', 0) * 60
+               
                questions_json = json.dumps(questions, ensure_ascii=False)
                context = {
                     'exam': exam,

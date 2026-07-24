@@ -15,6 +15,8 @@ def handle(exam_id):
           ORDER BY eq.order_num
      ''', (exam_id,))
      rows = cursor.fetchall()
+     conn.close()
+
      results = []
      for row in rows:
           q = dict(row)
@@ -31,5 +33,5 @@ def handle(exam_id):
           conn2.close()
           q['answers'] = [dict(a) for a in answers]
           results.append(q)
-     conn.close()
+
      return results

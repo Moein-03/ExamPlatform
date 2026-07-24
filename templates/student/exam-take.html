@@ -1,22 +1,39 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>شرکت در آزمون</title>
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
-     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-     <style>
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; padding: 20px; }
-          .mdl-card { max-width: 900px; margin: 0 auto; width: 100%; }
-          .question-container { margin-bottom: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; }
-          .timer-bar { background: #f44336; color: white; padding: 12px 20px; border-radius: 8px; font-size: 1.2em; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-          .timer-bar .time { font-size: 1.8em; font-weight: bold; }
-          .option-label { display: block; padding: 6px 0; cursor: pointer; }
-          .option-label input { margin-left: 10px; }
-          .btn-submit { margin-top: 20px; width: 100%; }
-     </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ exam.title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+        .mdl-card { max-width: 900px; margin: 0 auto; width: 100%; }
+        .question-container { padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; min-height: 200px; }
+        .timer-bar { background: #f44336; color: white; padding: 12px 20px; border-radius: 8px; font-size: 1.2em; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .timer-bar .time { font-size: 1.8em; font-weight: bold; }
+        .option-label { display: block; padding: 8px 0; cursor: pointer; border-bottom: 1px solid #f5f5f5; }
+        .option-label:hover { background: #f9f9f9; }
+        .option-label input { margin-left: 10px; }
+        .btn-submit { margin-top: 20px; width: 100%; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+        .pagination button { min-width: 40px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9em; }
+        .pagination button.active { background: #3f51b5; color: white; border-color: #3f51b5; }
+        .pagination button:hover:not(.active) { background: #f0f0f0; }
+        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .question-counter { text-align: center; font-size: 0.9em; color: #666; margin-bottom: 12px; }
+        .question-number-badge { background: #3f51b5; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.8em; display: inline-block; margin-bottom: 10px; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 16px; gap: 10px; }
+        .question-type-badge { background: #e0e0e0; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 8px; }
+        .question-score { color: #666; font-size: 0.9em; }
+        .question-text { font-size: 1.1em; margin: 12px 0; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; font-size: 1em; resize: vertical; min-height: 100px; }
+        .answered-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 4px; }
+        .answered-dot.yes { background: #4caf50; }
+        .answered-dot.no { background: #e0e0e0; }
+        .progress-text { font-size: 0.85em; color: #666; }
+    </style>
 </head>
 <body>
      <div class="mdl-grid">
@@ -26,15 +43,28 @@
                          <h2 class="mdl-card__title-text">{{ exam.title }}</h2>
                     </div>
                     <div class="mdl-card__supporting-text">
-
                          <div id="timer-container" class="timer-bar">
                          <span>زمان باقی‌مانده</span>
                          <span class="time" id="timer-display">00:00:00</span>
                          </div>
 
+                         <div class="progress-text" id="progress-text">سوال 1 از 0</div>
+
                          <form id="exam-form" method="POST" action="{{ base_url }}/exam/submit/{{ exam_id }}">
-                         <div id="questions-container"></div>
-                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored btn-submit">
+                         <div id="questions-container">
+                              <div class="question-container" id="current-question">
+
+                              </div>
+                         </div>
+
+                         <div class="nav-buttons">
+                              <button type="button" class="mdl-button mdl-js-button" id="prev-btn" disabled>قبلی</button>
+                              <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="next-btn">بعدی</button>
+                         </div>
+
+                         <div class="pagination" id="pagination-container"></div>
+
+                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored btn-submit" id="submit-btn">
                               ارسال پاسخ‌ها
                          </button>
                          </form>
@@ -60,73 +90,216 @@
                var timeLeft = parseInt(dataElement.getAttribute('data-time-left') || '0', 10);
                var baseUrl = dataElement.getAttribute('data-base-url') || '';
 
-               function renderQuestions() {
-                    var container = document.getElementById('questions-container');
+               var currentIndex = 0;
+               var totalQuestions = questions.length;
+               var answers = {};
+
+               function renderQuestion(index) {
+                    var container = document.getElementById('current-question');
                     if (!container) return;
-                    if (!questions || questions.length === 0) {
+
+                    if (totalQuestions === 0) {
                          container.innerHTML = '<p style="text-align:center; color:#999;">هیچ سوالی برای این آزمون وجود ندارد.</p>';
                          return;
                     }
+
+                    var q = questions[index];
+                    var qNum = index + 1;
+                    var typeText = '';
+                    if (q.question_type === 'true_false') typeText = 'صحیح/غلط';
+                    else if (q.question_type === 'single') typeText = 'تستی';
+                    else if (q.question_type === 'descriptive') typeText = 'تشریحی';
+                    else typeText = q.question_type || '';
+
+                    var savedAnswer = answers[q.id] || '';
+
                     var html = '';
-                    for (var i = 0; i < questions.length; i++) {
+                    html += '<div class="question-number-badge">سوال ' + qNum + ' از ' + totalQuestions + '</div>';
+                    html += '<div class="question-text">' + (q.question_text || '') + '</div>';
+                    html += '<div><span class="question-type-badge">' + typeText + '</span> <span class="question-score">نمره: ' + (q.score || 0) + '</span></div>';
+
+                    var answersList = q.answers || [];
+                    if (answersList.length > 0) {
+                         for (var j = 0; j < answersList.length; j++) {
+                         var ans = answersList[j];
+                         var checked = (savedAnswer === ans.answer_text) ? 'checked' : '';
+                         html += '<label class="option-label" for="q' + q.id + '_' + j + '">';
+                         html += '<input type="radio" id="q' + q.id + '_' + j + '" ';
+                         html += 'name="question_' + q.id + '" value="' + ans.answer_text + '" ' + checked + '>';
+                         html += '<span>' + ans.answer_text + '</span>';
+                         html += '</label>';
+                         }
+                    } else {
+                         // سوال تشریحی
+                         html += '<textarea name="question_' + q.id + '" rows="4" placeholder="پاسخ خود را وارد کنید...">' + savedAnswer + '</textarea>';
+                    }
+
+                    container.innerHTML = html;
+
+                    // ثبت پاسخ در هنگام تغییر
+                    var inputs = container.querySelectorAll('input[type="radio"], textarea');
+                    for (var k = 0; k < inputs.length; k++) {
+                         var input = inputs[k];
+                         var name = input.name;
+                         if (name && name.startsWith('question_')) {
+                         var qId = name.replace('question_', '');
+                         input.addEventListener('change', function(e) {
+                              var target = e.target;
+                              var qId = target.name.replace('question_', '');
+                              if (target.type === 'radio') {
+                                   var checkedRadio = document.querySelector('input[name="' + target.name + '"]:checked');
+                                   if (checkedRadio) {
+                                        answers[qId] = checkedRadio.value;
+                                   }
+                              } else if (target.tagName === 'TEXTAREA') {
+                                   answers[qId] = target.value;
+                              }
+                              updatePagination();
+                              updateProgress();
+                         });
+                         // برای textarea، تغییرات را در لحظه ذخیره کن
+                         if (input.tagName === 'TEXTAREA') {
+                              input.addEventListener('input', function(e) {
+                                   var qId = e.target.name.replace('question_', '');
+                                   answers[qId] = e.target.value;
+                                   updatePagination();
+                                   updateProgress();
+                              });
+                         }
+                         }
+                    }
+
+                    document.getElementById('prev-btn').disabled = (index === 0);
+                    document.getElementById('next-btn').textContent = (index === totalQuestions - 1) ? 'پایان' : 'بعدی';
+
+                    updateProgress();
+                    updatePagination();
+                    scrollToTop();
+               }
+
+               function updateProgress() {
+                    var answered = Object.keys(answers).length;
+                    var container = document.getElementById('progress-text');
+                    if (container) {
+                         container.textContent = 'پاسخ داده شده: ' + answered + ' از ' + totalQuestions + ' سوال';
+                    }
+               }
+
+               function updatePagination() {
+                    var container = document.getElementById('pagination-container');
+                    if (!container) return;
+
+                    var html = '';
+                    for (var i = 0; i < totalQuestions; i++) {
                          var q = questions[i];
-                         var qNum = i + 1;
-                         html += '<div class="question-container">';
-                         html += '<h4>سوال ' + qNum + ': ' + (q.question_text || '') + '</h4>';
-                         html += '<p><small>نمره: ' + (q.score || 0) + '</small></p>';
-                         var answers = q.answers || [];
-                         if (answers.length > 0) {
-                         for (var j = 0; j < answers.length; j++) {
-                              var ans = answers[j];
-                              html += '<label class="option-label" for="q' + q.id + '_' + ans.id + '">';
-                              html += '<input type="radio" id="q' + q.id + '_' + ans.id + '" ';
-                              html += 'name="question_' + q.id + '" value="' + ans.answer_text + '">';
-                              html += '<span>' + ans.answer_text + '</span>';
-                              html += '</label>';
-                         }
-                         } else {
-                         html += '<div class="mdl-textfield mdl-js-textfield" style="width:100%;">';
-                         html += '<textarea class="mdl-textfield__input" name="question_' + q.id + '" rows="3"></textarea>';
-                         html += '<label class="mdl-textfield__label" for="q' + q.id + '">پاسخ خود را وارد کنید...</label>';
-                         html += '</div>';
-                         }
-                         html += '</div>';
+                         var isAnswered = answers[q.id] && answers[q.id].length > 0;
+                         var isActive = (i === currentIndex);
+                         var dotClass = isAnswered ? 'yes' : 'no';
+                         html += '<button type="button" class="' + (isActive ? 'active' : '') + '" data-index="' + i + '" title="سوال ' + (i+1) + '">';
+                         html += '<span class="answered-dot ' + dotClass + '"></span> ' + (i+1);
+                         html += '</button>';
                     }
                     container.innerHTML = html;
-                    if (window.componentHandler) {
-                         window.componentHandler.upgradeAllRegistered();
+
+                    // رویداد کلیک برای دکمه‌های صفحه‌بندی
+                    var btns = container.querySelectorAll('button');
+                    for (var j = 0; j < btns.length; j++) {
+                         btns[j].addEventListener('click', function(e) {
+                         var index = parseInt(this.getAttribute('data-index'), 10);
+                         if (!isNaN(index) && index !== currentIndex) {
+                              saveCurrentAnswer();
+                              currentIndex = index;
+                              renderQuestion(currentIndex);
+                         }
+                         });
                     }
+               }
+
+               function saveCurrentAnswer() {
+                    var container = document.getElementById('current-question');
+                    if (!container) return;
+                    var inputs = container.querySelectorAll('input[type="radio"]:checked, textarea');
+                    for (var i = 0; i < inputs.length; i++) {
+                         var input = inputs[i];
+                         var name = input.name;
+                         if (name && name.startsWith('question_')) {
+                         var qId = name.replace('question_', '');
+                         if (input.type === 'radio') {
+                              answers[qId] = input.value;
+                         } else if (input.tagName === 'TEXTAREA') {
+                              answers[qId] = input.value;
+                         }
+                         }
+                    }
+               }
+
+               function scrollToTop() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                }
 
                function startTimer(totalSeconds) {
                     var display = document.getElementById('timer-display');
                     if (!display) return;
+
                     function updateDisplay(seconds) {
                          var hours = Math.floor(seconds / 3600);
                          var minutes = Math.floor((seconds % 3600) / 60);
                          var secs = seconds % 60;
                          display.textContent = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
                     }
+
                     var remaining = totalSeconds;
                     updateDisplay(remaining);
+
                     var timerInterval = setInterval(function() {
                          remaining--;
                          updateDisplay(remaining);
                          if (remaining <= 0) {
                          clearInterval(timerInterval);
-                         alert('زمان شما به پایان رسید!');
+                         alert('زمان شما به پایان رسید! پاسخ‌ها به صورت خودکار ارسال می‌شوند.');
                          document.getElementById('exam-form').submit();
                          }
                     }, 1000);
+
                     window.addEventListener('beforeunload', function(e) {
                          e.preventDefault();
-                         e.returnValue = '';
+                         e.returnValue = 'آیا از خروج از صفحه اطمینان دارید؟ پاسخ‌های شما ذخیره نخواهد شد.';
                     });
                }
 
+               document.getElementById('prev-btn').addEventListener('click', function() {
+                    if (currentIndex > 0) {
+                         saveCurrentAnswer();
+                         currentIndex--;
+                         renderQuestion(currentIndex);
+                    }
+               });
+
+               document.getElementById('next-btn').addEventListener('click', function() {
+                    saveCurrentAnswer();
+                    if (currentIndex === totalQuestions - 1) {
+                         if (confirm('آیا از ارسال پاسخ‌ها اطمینان دارید؟')) {
+                         document.getElementById('exam-form').submit();
+                         }
+                    } else {
+                         currentIndex++;
+                         renderQuestion(currentIndex);
+                    }
+               });
+
                window.onload = function() {
-                    renderQuestions();
+                    if (totalQuestions > 0) {
+                         renderQuestion(0);
+                    } else {
+                         document.getElementById('current-question').innerHTML = '<p style="text-align:center; color:#999;">هیچ سوالی برای این آزمون وجود ندارد.</p>';
+                         document.getElementById('next-btn').disabled = true;
+                         document.getElementById('prev-btn').disabled = true;
+                    }
                     if (timeLeft > 0) startTimer(timeLeft);
+
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
                };
           })();
      </script>
