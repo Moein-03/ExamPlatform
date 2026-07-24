@@ -316,11 +316,14 @@ def route(path, method, data, headers):
                     return response._403()
                results = exam_results.handle(item_id)
                stats = report_stats.handle(item_id)
-               html = response.render_master("exam-results.html", {
-                    'results': results,
-                    'stats': stats,
+               results_json = json.dumps(results, ensure_ascii=False)
+               stats_json = json.dumps(stats, ensure_ascii=False)
+               context = {
+                    'results_json': results_json,
+                    'stats_json': stats_json,
                     'base_url': settings.BASE_URL
-               }, "نتایج آزمون")
+               }
+               html = response.render_master("exam-results.html", context, "نتایج آزمون")
                return response.serve_html(html)
 
           # ---------- شرکت در آزمون (دانشجو) ----------

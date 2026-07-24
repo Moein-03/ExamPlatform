@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>نتایج آزمون</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-card { max-width: 1000px; margin: 0 auto; width: 100%; }
+          .mdl-card__supporting-text { width: 100%; box-sizing: border-box; }
+          .stat-box { padding: 20px; text-align: center; background: #f9f9f9; border-radius: 8px; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+          .stat-box .number { font-size: 2.2em; font-weight: bold; color: #3f51b5; }
+          .stat-box .label { font-size: 0.9em; color: #666; margin-top: 4px; }
+          .table-container { overflow-x: auto; margin-top: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid #e0e0e0; }
+          th { background: #f5f5f5; font-weight: bold; color: #333; }
+          .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 500; display: inline-block; }
+          .status-passed { background: #e8f5e9; color: #2e7d32; }
+          .status-failed { background: #ffebee; color: #c62828; }
+          .empty-msg { text-align: center; color: #999; padding: 30px 0; }
+          .back-link { margin-top: 20px; display: inline-block; }
+          .score-high { color: #2e7d32; }
+          .score-low { color: #c62828; }
+          .score-medium { color: #f57f17; }
+          @media (max-width: 600px) {
+               .stat-box .number { font-size: 1.6em; }
+               th, td { padding: 6px 8px; font-size: 0.85em; }
+          }
+     </style>
+</head>
+<body>
+     <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--12-col">
+               <div class="mdl-card mdl-shadow--2dp">
+                    <div class="mdl-card__title">
+                         <h2 class="mdl-card__title-text">نتایج آزمون</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                         <div class="mdl-grid" id="stats-container"></div>
+
+                         <h4 style="margin-top: 24px;">لیست دانشجویان شرکت‌کننده</h4>
+                         <div class="table-container">
+                         <table>
+                              <thead>
+                                   <tr>
+                                        <th>#</th>
+                                        <th>نام</th>
+                                        <th>ایمیل</th>
+                                        <th>نمره</th>
+                                        <th>وضعیت</th>
+                                   </tr>
+                              </thead>
+                              <tbody id="results-tbody">
+                                   <tr><td colspan="5" style="text-align:center;">در حال بارگذاری...</td></tr>
+                              </tbody>
+                         </table>
+                         </div>
+
+                         <div style="margin-top: 20px;">
+                         <a href="{{ base_url }}/exams" class="mdl-button mdl-js-button mdl-button--raised">بازگشت به لیست</a>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+
+     <div id="exam-data" 
+          data-results='{{ results_json }}' 
+          data-stats='{{ stats_json }}'
+          data-base-url='{{ base_url }}'>
+     </div>
+
+     <script>
+          (function() {
+               var dataElement = document.getElementById('exam-data');
+               var results = JSON.parse(dataElement.getAttribute('data-results') || '[]');
+               var stats = JSON.parse(dataElement.getAttribute('data-stats') || '{}');
+               var baseUrl = dataElement.getAttribute('data-base-url') || '';
+
+               function renderStats() {
+                    var container = document.getElementById('stats-container');
+                    if (!container) return;
+
+                    var html = '';
+                    var statsItems = [
+                         { label: 'تعداد شرکت‌کنندگان', value: stats.total_participants || 0},
+                         { label: 'میانگین نمرات', value: stats.avg_score || 0},
+                         { label: 'بالاترین نمره', value: stats.max_score || 0},
+                         { label: 'پایین‌ترین نمره', value: stats.min_score || 0}
+                    ];
+
+                    for (var i = 0; i < statsItems.length; i++) {
+                         var item = statsItems[i];
+                         html += '<div class="mdl-cell mdl-cell--3-col">';
+                         html += '<div class="stat-box">';
+                         html += '<div class="number">' + item.value + '</div>';
+                         html += '<div class="label">' + item.label + '</div>';
+                         html += '</div>';
+                         html += '</div>';
+                    }
+
+                    container.innerHTML = html;
+               }
+
+               function renderResults() {
+                    var tbody = document.getElementById('results-tbody');
+                    if (!tbody) return;
+
+                    if (!results || results.length === 0) {
+                         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">هیچ دانشجویی در این آزمون شرکت نکرده است.</td></tr>';
+                         return;
+                    }
+
+                    var html = '';
+                    for (var i = 0; i < results.length; i++) {
+                         var r = results[i];
+                         var rowNum = i + 1;
+                         var score = r.score || 0;
+                         var status = r.status || 'pending';
+                         var statusText = status === 'completed' ? 'تکمیل شده' : 'در انتظار';
+                         var statusClass = status === 'completed' ? 'status-passed' : 'status-failed';
+
+                         var scoreClass = 'score-medium';
+                         if (score >= 70) scoreClass = 'score-high';
+                         else if (score < 40) scoreClass = 'score-low';
+
+                         var passedText = (score >= 50) ? 'قبول' : 'مردود';
+                         var passedClass = (score >= 50) ? 'status-passed' : 'status-failed';
+
+                         html += '<tr>';
+                         html += '<td>' + rowNum + '</td>';
+                         html += '<td>' + (r.fullname || 'نامشخص') + '</td>';
+                         html += '<td>' + (r.email || '') + '</td>';
+                         html += '<td><span class="' + scoreClass + '">' + score + '</span></td>';
+                         html += '<td><span class="status-badge ' + passedClass + '">' + passedText + '</span></td>';
+                         html += '</tr>';
+                    }
+                    tbody.innerHTML = html;
+               }
+
+               window.onload = function() {
+                    renderStats();
+                    renderResults();
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
+               };
+          })();
+     </script>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>
