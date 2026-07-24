@@ -8,7 +8,7 @@
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
      <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; padding: 20px; }
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
           .mdl-card { max-width: 800px; margin: 0 auto; width: 100%; }
           .mdl-card__supporting-text { width: 100%; box-sizing: border-box; }
           .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #eee; }
@@ -24,14 +24,12 @@
 
           .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
           .btn-group form { display: inline; }
-          .question-list { margin-top: 16px; }
-          .question-item { padding: 8px 12px; background: #f9f9f9; border-radius: 4px; margin-bottom: 4px; }
-          .student-list { margin-top: 16px; }
-          .student-item { padding: 4px 12px; background: #f9f9f9; border-radius: 4px; margin-bottom: 4px; }
           .empty-msg { color: #999; font-style: italic; }
           .btn-publish { background: #4caf50; color: white; }
           .btn-unpublish { background: #ff9800; color: white; }
           .btn-delete { background: #f44336; color: white; }
+          .btn-take { background: #2196f3; color: white; }
+          .btn-take-disabled { background: #e0e0e0; color: #9e9e9e; pointer-events: none; }
      </style>
 </head>
 <body>
@@ -46,12 +44,6 @@
 
                          <div class="btn-group" id="action-buttons"></div>
 
-                         <h4 style="margin-top: 20px;">سوالات این آزمون</h4>
-                         <div id="questions-list" class="question-list"></div>
-
-                         <h4 style="margin-top: 20px;">دانشجویان شرکت‌کننده</h4>
-                         <div id="students-list" class="student-list"></div>
-
                          <div style="margin-top: 20px;">
                          <a href="{{ base_url }}/exams" class="mdl-button mdl-js-button mdl-button--raised">بازگشت به لیست</a>
                          </div>
@@ -60,13 +52,14 @@
           </div>
      </div>
 
-     <div id="exam-data" data-exam='{{ exam_json }}' data-base-url='{{ base_url }}'></div>
+     <div id="exam-data" data-exam='{{ exam_json }}' data-base-url='{{ base_url }}' data-user-role='{{ user_role }}'></div>
 
      <script>
           (function() {
                var dataElement = document.getElementById('exam-data');
                var exam = JSON.parse(dataElement.getAttribute('data-exam') || 'null');
                var baseUrl = dataElement.getAttribute('data-base-url') || '';
+               var userRole = dataElement.getAttribute('data-user-role') || '';
 
                if (!exam) {
                     document.getElementById('exam-title').textContent = 'آزمون یافت نشد';
@@ -80,15 +73,15 @@
                     var teacherName = exam.teacher_name || 'نامشخص';
 
                     var html = '';
-                    html += '<div class="info-row"><span class="info-label">عنوان:</span><span class="info-value">' + (exam.title || '') + '</span></div>';
-                    html += '<div class="info-row"><span class="info-label">استاد:</span><span class="info-value">' + teacherName + '</span></div>';
-                    html += '<div class="info-row"><span class="info-label">توضیحات:</span><span class="info-value">' + (exam.description || '') + '</span></div>';
-                    html += '<div class="info-row"><span class="info-label">زمان شروع:</span><span class="info-value">' + (exam.start_time || '') + '</span></div>';
-                    html += '<div class="info-row"><span class="info-label">مدت زمان:</span><span class="info-value">' + (exam.duration || 0) + ' دقیقه</span></div>';
-                    html += '<div class="info-row"><span class="info-label">نمره کل:</span><span class="info-value">' + (exam.total_score || 0) + '</span></div>';
-                    html += '<div class="info-row"><span class="info-label">تعداد سوالات:</span><span class="info-value">' + (exam.total_questions || 0) + '</span></div>';
-                    html += '<div class="info-row"><span class="info-label">وضعیت:</span><span class="info-value"><span class="status-badge ' + statusClass + '">' + statusText + '</span></span></div>';
-                    html += '<div class="info-row"><span class="info-label">انتخاب تصادفی:</span><span class="info-value">' + (exam.is_random ? 'بله' : 'خیر') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">عنوان:</span><span class="info-value">' + (exam.title || '') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">استاد:</span><span class="info-value">' + teacherName + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">توضیحات:</span><span class="info-value">' + (exam.description || '') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">تاریخ و زمان برگزاری آزمون:</span><span class="info-value">' + ((exam.start_time || '—').replace('T', ' | ') || '')+ '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">مدت زمان:</span><span class="info-value">' + (exam.duration || 0) + ' دقیقه</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">نمره کل:</span><span class="info-value">' + (exam.total_score || 0) + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">تعداد سوالات:</span><span class="info-value">' + (exam.total_questions || 0) + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">وضعیت:</span><span class="info-value"><span class="status-badge ' + statusClass + '">' + statusText + '</span></span></div>';
+                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">انتخاب تصادفی:</span><span class="info-value">' + (exam.is_random ? 'بله' : 'خیر') + '</span></div>';
 
                     container.innerHTML = html;
                     document.getElementById('exam-title').textContent = 'جزئیات آزمون: ' + (exam.title || '');
@@ -98,56 +91,38 @@
                     var container = document.getElementById('action-buttons');
                     var html = '';
 
-                    html += '<a href="' + baseUrl + '/exam/edit/' + exam.id + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ویرایش</a>';
+                    if (userRole === 'admin' || userRole === 'teacher') {
+                         html += '<a href="' + baseUrl + '/exam/edit/' + exam.id + '" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">ویرایش</a>';
 
-                    if (exam.exam_status === 'پیش‌نویس') {
-                         html += '<form method="POST" action="' + baseUrl + '/exam/publish/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از فعال کردن این آزمون اطمینان دارید؟\');">';
-                         html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-publish">فعال کردن</button>';
+                         if (exam.exam_status === 'پیش‌نویس') {
+                              html += '<form method="POST" action="' + baseUrl + '/exam/publish/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از فعال کردن این آزمون اطمینان دارید؟\');">';
+                              html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-publish">فعال کردن</button>';
+                              html += '</form>';
+                         } else if (exam.exam_status === 'فعال' || exam.exam_status === 'در حال برگزاری') {
+                              html += '<form method="POST" action="' + baseUrl + '/exam/unpublish/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از غیرفعال کردن این آزمون اطمینان دارید؟\');">';
+                              html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-unpublish">غیرفعال کردن</button>';
+                              html += '</form>';
+                         }
+
+                         html += '<form method="POST" action="' + baseUrl + '/exam/delete/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این آزمون اطمینان دارید؟\');">';
+                         html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-delete">حذف</button>';
                          html += '</form>';
-                    } else if (exam.exam_status === 'فعال' || exam.exam_status === 'در حال برگزاری') {
-                         html += '<form method="POST" action="' + baseUrl + '/exam/unpublish/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از غیرفعال کردن این آزمون اطمینان دارید؟\');">';
-                         html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-unpublish">غیرفعال کردن</button>';
-                         html += '</form>';
+                    } else if (userRole === 'student') {
+                         if (exam.exam_status === 'در حال برگزاری') {
+                              html += '<a href="' + baseUrl + '/exam/take/' + exam.id + '" class="mdl-button mdl-js-button mdl-button--raised btn-take">شرکت در آزمون</a>';
+                         } else if (exam.exam_status === 'فعال') {
+                              html += '<button class="mdl-button mdl-js-button mdl-button--raised btn-take-disabled" disabled>عیرفعال تا شروع آزمون</button>';
+                         } else {
+                              html += '';
+                         }
                     }
 
-                    html += '<form method="POST" action="' + baseUrl + '/exam/delete/' + exam.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این آزمون اطمینان دارید؟\');">';
-                    html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--raised btn-delete">حذف</button>';
-                    html += '</form>';
-
-                    container.innerHTML = html;
-               }
-
-               function renderQuestions() {
-                    var container = document.getElementById('questions-list');
-                    if (!exam.question_ids || exam.question_ids.length === 0) {
-                         container.innerHTML = '<p class="empty-msg">هیچ سوالی برای این آزمون انتخاب نشده است.</p>';
-                         return;
-                    }
-                    var html = '';
-                    for (var i = 0; i < exam.question_ids.length; i++) {
-                         html += '<div class="question-item">سوال ' + (i + 1) + ' (شناسه: ' + exam.question_ids[i] + ')</div>';
-                    }
-                    container.innerHTML = html;
-               }
-
-               function renderStudents() {
-                    var container = document.getElementById('students-list');
-                    if (!exam.student_ids || exam.student_ids.length === 0) {
-                         container.innerHTML = '<p class="empty-msg">هیچ دانشجویی برای این آزمون ثبت‌نام نشده است.</p>';
-                         return;
-                    }
-                    var html = '';
-                    for (var i = 0; i < exam.student_ids.length; i++) {
-                         html += '<div class="student-item">دانشجو (شناسه: ' + exam.student_ids[i] + ')</div>';
-                    }
                     container.innerHTML = html;
                }
 
                window.onload = function() {
                     renderExamInfo();
                     renderActions();
-                    renderQuestions();
-                    renderStudents();
                     if (window.componentHandler) {
                          window.componentHandler.upgradeAllRegistered();
                     }

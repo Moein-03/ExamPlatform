@@ -1,45 +1,48 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لیست آزمون‌ها</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; max-width: 100%; overflow-x: hidden; direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
-        .mdl-grid { max-width: 100%; padding: 0; margin: 0 auto; }
-        .mdl-cell { padding: 0; }
-        .mdl-card { width: 100%; max-width: 100%; margin: 0; box-sizing: border-box; }
-        .mdl-card__supporting-text { padding: 16px; width: 100%; max-width: 100%; box-sizing: border-box; }
-        .table-container { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; min-width: 650px; table-layout: fixed; border-collapse: collapse; }
-        th:nth-child(1), td:nth-child(1) { width: 20%; }
-        th:nth-child(2), td:nth-child(2) { width: 15%; }
-        th:nth-child(3), td:nth-child(3) { width: 12%; }
-        th:nth-child(4), td:nth-child(4) { width: 12%; }
-        th:nth-child(5), td:nth-child(5) { width: 16%; }
-        th:nth-child(6), td:nth-child(6) { width: 25%; }
-        th, td { padding: 8px 8px; text-align: right; border-bottom: 1px solid #e0e0e0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        th:last-child { text-align: center !important; }
-        td:last-child { overflow: visible; white-space: nowrap; text-align: center; }
-        th { background: #f5f5f5; font-weight: bold; }
-        .btn-icon { color: #3f51b5; }
-        .btn-delete { color: #f44336; }
-        .btn-take { color: #4caf50; }
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>لیست آزمون‌ها</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          html, body { width: 100%; max-width: 100%; overflow-x: hidden; direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-grid { max-width: 100%; padding: 0; margin: 0 auto; }
+          .mdl-cell { padding: 0; }
+          .mdl-card { width: 100%; max-width: 100%; margin: 0; box-sizing: border-box; }
+          .mdl-card__supporting-text { padding: 16px; width: 100%; max-width: 100%; box-sizing: border-box; }
+          .table-container { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          table { width: 100%; min-width: 650px; table-layout: fixed; border-collapse: collapse; }
+          th:nth-child(1), td:nth-child(1) { width: 20%; }
+          th:nth-child(2), td:nth-child(2) { width: 15%; }
+          th:nth-child(3), td:nth-child(3) { width: 20%; }
+          th:nth-child(4), td:nth-child(4) { width: 12%; }
+          th:nth-child(5), td:nth-child(5) { width: 16%; }
+          th:nth-child(6), td:nth-child(6) { width: 17%; }
+          th, td { padding: 8px 8px; text-align: right; border-bottom: 1px solid #e0e0e0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          th:last-child { text-align: center !important; }
+          td:last-child { overflow: visible; white-space: nowrap; text-align: center; }
+          th:nth-child(5), td:nth-child(5) { text-align: center; }
+          th { background: #f5f5f5; font-weight: bold; }
+          .btn-icon { color: #3f51b5; }
+          .btn-delete { color: #f44336; }
+          .btn-take { color: #4caf50; }
+          .btn-disabled { color: #bdbdbd; pointer-events: none; cursor: default; }
+          .btn-view { color: #2196f3; }
 
-        .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 500; display: inline-block; }
-        .status-draft { background: #fff3e0; color: #e65100; }
-        .status-active { background: #e8f5e9; color: #2e7d32; }
-        .status-ongoing { background: #fff9c4; color: #f57f17; }
-        .status-ended { background: #fce4ec; color: #c62828; }
-        .status-unknown { background: #e0e0e0; color: #616161; }
+          .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 500; display: inline-block; }
+          .status-draft { background: #fff3e0; color: #e65100; }
+          .status-active { background: #e8f5e9; color: #2e7d32; }
+          .status-ongoing { background: #fff9c4; color: #f57f17; }
+          .status-ended { background: #fce4ec; color: #c62828; }
+          .status-unknown { background: #e0e0e0; color: #616161; }
 
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
-        @media (max-width: 768px) { body { padding: 10px; } .mdl-card__supporting-text { padding: 8px; } table { min-width: 550px; } th, td { padding: 6px 4px; font-size: 0.9em; } }
-        @media (max-width: 480px) { table { min-width: 450px; } th, td { font-size: 0.8em; padding: 4px 3px; } .mdl-button { font-size: 0.8em; padding: 0 12px; min-width: 30px; } }
-    </style>
+          .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+          @media (max-width: 768px) { body { padding: 10px; } .mdl-card__supporting-text { padding: 8px; } table { min-width: 550px; } th, td { padding: 6px 4px; font-size: 0.9em; } }
+          @media (max-width: 480px) { table { min-width: 450px; } th, td { font-size: 0.8em; padding: 4px 3px; } .mdl-button { font-size: 0.8em; padding: 0 12px; min-width: 30px; } }
+     </style>
 </head>
 <body>
      <div class="mdl-grid">
@@ -56,7 +59,7 @@
                                    <tr>
                                         <th>عنوان</th>
                                         <th>استاد</th>
-                                        <th>تعداد سوالات</th>
+                                        <th>تاریخ و زمان شروع</th>
                                         <th>زمان (دقیقه)</th>
                                         <th>وضعیت</th>
                                         <th>عملیات</th>
@@ -101,11 +104,12 @@
                     var statusText = e.exam_status || 'نامشخص';
                     var statusClass = e.status_class || 'status-unknown';
                     var teacherName = e.teacher_name || 'نامشخص';
+                    var startTime = (e.start_time || '—').replace('T', ' | ');
 
                     html += '<tr>';
                     html += '<td title="' + (e.title || '') + '">' + (e.title || '') + '</td>';
                     html += '<td title="' + teacherName + '">' + teacherName + '</td>';
-                    html += '<td>' + (e.total_questions || 0) + '</td>';
+                    html += '<td>' + startTime + '</td>';
                     html += '<td>' + (e.duration || 0) + '</td>';
                     html += '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>';
                     html += '<td>';
@@ -117,10 +121,11 @@
                          html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon btn-delete" title="حذف"><i class="material-icons">delete</i></button>';
                          html += '</form>';
                     } else if (userRole === 'student') {
-                         if (e.exam_status === 'در حال برگزاری' || e.exam_status === 'فعال') {
+                         html += '<a href="' + baseUrl + '/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-view" title="مشاهده"><i class="material-icons">visibility</i></a>';
+                         if (e.exam_status === 'در حال برگزاری') {
                          html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
                          } else {
-                         html += '<span style="color:#999;">غیرفعال</span>';
+                         html += '<span class="mdl-button mdl-js-button mdl-button--icon btn-disabled" title="غیرفعال"><i class="material-icons">play_arrow</i></span>';
                          }
                     }
                     html += '</td>';

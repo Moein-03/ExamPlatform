@@ -222,16 +222,38 @@ def route(path, method, data, headers):
           #          'base_url': settings.BASE_URL
           #     }, exam.get('title', 'جزئیات آزمون'))
           #     return response.serve_html(html)
+          #case ("/exam", "GET") if item_id is not None:
+          #     if not user_id or user_role not in ['admin', 'teacher']:
+          #          return response._403()
+          #     exam = exam_get_one.handle(item_id, user_id if user_role == 'teacher' else None)
+          #     if not exam:
+          #          return response._404()
+          #     exam_json = json.dumps(exam, ensure_ascii=False)
+          #     context = {
+          #          'exam_json': exam_json,
+          #          'base_url': settings.BASE_URL
+          #     }
+          #     html = response.render_master("exam-detail.html", context, "جزئیات آزمون")
+          #     return response.serve_html(html)
+
           case ("/exam", "GET") if item_id is not None:
-               if not user_id or user_role not in ['admin', 'teacher']:
-                    return response._403()
-               exam = exam_get_one.handle(item_id, user_id if user_role == 'teacher' else None)
+               if not user_id:
+                    return response._401()
+               exam = exam_get_one.handle(item_id, None, only_published=(user_role == 'student'))
                if not exam:
                     return response._404()
+               if user_role == 'student':
+                    if exam.get('is_published') != 1:
+                         return response._403()
+                    if user_id not in exam.get('student_ids', []):
+                         return response._403()
+               elif user_role not in ['admin', 'teacher']:
+                    return response._403()
                exam_json = json.dumps(exam, ensure_ascii=False)
                context = {
                     'exam_json': exam_json,
-                    'base_url': settings.BASE_URL
+                    'base_url': settings.BASE_URL,
+                    'user_role': user_role
                }
                html = response.render_master("exam-detail.html", context, "جزئیات آزمون")
                return response.serve_html(html)
