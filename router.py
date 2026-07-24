@@ -349,6 +349,7 @@ def route(path, method, data, headers):
                questions_json = json.dumps(questions, ensure_ascii=False)
                context = {
                     'exam': exam,
+                    'exam_id': exam['id'],
                     'questions_json': questions_json,
                     'time_left': time_left,
                     'base_url': settings.BASE_URL
@@ -375,21 +376,24 @@ def route(path, method, data, headers):
                     return response._403()
                result = exam_submit.handle(item_id, user_id, data)
                if "موفقیت" in result:
-                    return response.redirect(f"/exam/feedback/{item_id}")
+                    return response.redirect(f"{settings.BASE_URL}/exam/feedback/{item_id}")
                return response._200(result)
 
           case ("/exam/feedback", "GET") if item_id is not None:
                if not user_id or user_role != 'student':
                     return response._403()
                feedback = exam_results.handle(item_id, user_id)
+               if not feedback:
+                    return response._404()
                stats = report_stats.handle(item_id)
                feedback_json = json.dumps(feedback, ensure_ascii=False)
                stats_json = json.dumps(stats, ensure_ascii=False)
-               html = response.render_master("exam-feedback.html", {
+               context = {
                     'feedback_json': feedback_json,
                     'stats_json': stats_json,
                     'base_url': settings.BASE_URL
-               }, "بازخورد آزمون")
+               }
+               html = response.render_master("student/exam-feedback.html", context, "بازخورد آزمون")
                return response.serve_html(html)
 
           # ---------- مدیریت سوالات (یکپارچه) ----------

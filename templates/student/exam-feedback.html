@@ -8,16 +8,14 @@
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
      <style>
           body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-card { max-width: 800px; margin: 0 auto; width: 100%; }
           .score-number { font-size: 2.5em; color: #3f51b5; font-weight: bold; }
           .status-passed { color: #4caf50; font-size: 1.5em; font-weight: bold; }
           .status-failed { color: #f44336; font-size: 1.5em; font-weight: bold; }
-          .question-feedback { margin-bottom: 20px; padding: 15px; border-radius: 8px; background: white; border: 1px solid #e0e0e0; }
-          .correct { color: #4caf50; font-weight: bold; }
-          .incorrect { color: #f44336; font-weight: bold; }
           .stat-box { padding: 20px; text-align: center; background: #f9f9f9; border-radius: 8px; height: 100%; }
-          .highlight-correct { background: #e8f5e9; border-color: #4caf50; }
-          .highlight-incorrect { background: #ffebee; border-color: #f44336; }
-          .mdl-card { width: 100%; }
+          .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #eee; }
+          .info-label { width: 120px; font-weight: bold; color: #555; }
+          .info-value { flex: 1; }
      </style>
 </head>
 <body>
@@ -28,92 +26,78 @@
                          <h2 class="mdl-card__title-text">نتایج آزمون</h2>
                     </div>
                     <div class="mdl-card__supporting-text">
+                         <div id="student-info"></div>
                          <div class="mdl-grid" id="stats-container"></div>
-                         <hr>
-                         <h4>بازخورد دقیق سوالات</h4>
-                         <div id="feedback-details-container"></div>
+                         <div style="margin-top: 20px;">
+                         <a href="{{ base_url }}/exams" class="mdl-button mdl-js-button mdl-button--raised" style="margin-top: 10px;">بازگشت به لیست</a>
+                         </div>
                     </div>
                </div>
           </div>
      </div>
 
+     <div id="exam-data" 
+          data-feedback='{{ feedback_json }}' 
+          data-stats='{{ stats_json }}'
+          data-base-url='{{ base_url }}'>
+     </div>
+
      <script>
-          // ===== دریافت داده‌ها =====
-          var feedbackDataStr = '{{ feedback_json }}';
-          var statsDataStr = '{{ stats_json }}';
+          (function() {
+               var dataElement = document.getElementById('exam-data');
+               var feedback = JSON.parse(dataElement.getAttribute('data-feedback') || '{}');
+               var stats = JSON.parse(dataElement.getAttribute('data-stats') || '{}');
+               var baseUrl = dataElement.getAttribute('data-base-url') || '';
 
-          var feedbackData = JSON.parse(feedbackDataStr);
-          var statsData = JSON.parse(statsDataStr);
-          var passed = feedbackData.passed || false;
-
-          // ===== رندر آمار =====
-          function renderStats(stats) {
-               var container = document.getElementById('stats-container');
-               if (!container) return;
-               var html = '';
-
-               html += '<div class="mdl-cell mdl-cell--4-col">';
-               html += '<div class="stat-box">';
-               html += '<h3>نمره شما</h3>';
-               html += '<p class="score-number">' + (feedbackData.score || 0) + '</p>';
-               html += '</div></div>';
-
-               html += '<div class="mdl-cell mdl-cell--4-col">';
-               html += '<div class="stat-box">';
-               html += '<h3>وضعیت</h3>';
-               var statusClass = passed ? 'status-passed' : 'status-failed';
-               var statusText = passed ? 'قبول' : 'مردود';
-               html += '<p class="' + statusClass + '">' + statusText + '</p>';
-               html += '</div></div>';
-
-               html += '<div class="mdl-cell mdl-cell--4-col">';
-               html += '<div class="stat-box">';
-               html += '<h3>آمار کلی</h3>';
-               html += '<p>میانگین: ' + (stats.avg_score || 0) + '</p>';
-               html += '<p>بالاترین: ' + (stats.max_score || 0) + '</p>';
-               html += '<p>پایین‌ترین: ' + (stats.min_score || 0) + '</p>';
-               html += '</div></div>';
-
-               container.innerHTML = html;
-          }
-
-          // ===== رندر بازخورد سوالات =====
-          function renderFeedback(details) {
-               var container = document.getElementById('feedback-details-container');
-               if (!container) return;
-
-               if (!details || details.length === 0) {
-                    container.innerHTML = '<p style="text-align:center; color:#999;">هیچ بازخوردی موجود نیست.</p>';
-                    return;
+               function renderStudentInfo() {
+                    var container = document.getElementById('student-info');
+                    if (!container) return;
+                    if (!feedback || !feedback.fullname) {
+                         container.innerHTML = '<p style="color:#999;">اطلاعاتی یافت نشد.</p>';
+                         return;
+                    }
+                    var html = '';
+                    html += '<div class="info-row"><span class="info-label">نام:</span><span class="info-value">' + (feedback.fullname || '') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">ایمیل:</span><span class="info-value">' + (feedback.email || '') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">نمره:</span><span class="info-value"><span class="score-number">' + (feedback.score || 0) + '</span></span></div>';
+                    html += '<div class="info-row"><span class="info-label">وضعیت:</span><span class="info-value"><span class="' + (feedback.passed ? 'status-passed' : 'status-failed') + '">' + (feedback.passed ? 'قبول' : 'مردود') + '</span></span></div>';
+                    container.innerHTML = html;
                }
 
-               var html = '';
-               for (var i = 0; i < details.length; i++) {
-                    var item = details[i];
-                    var qNum = i + 1;
-                    var isCorrect = item.is_correct || false;
-                    var statusClass = isCorrect ? 'correct' : 'incorrect';
-                    var statusText = isCorrect ? 'صحیح' : 'غلط';
-                    var highlightClass = isCorrect ? 'highlight-correct' : 'highlight-incorrect';
+               function renderStats() {
+                    var container = document.getElementById('stats-container');
+                    if (!container) return;
+                    var html = '';
 
-                    html += '<div class="question-feedback ' + highlightClass + '">';
-                    html += '<p><strong>سوال ' + qNum + ':</strong> ' + (item.question_text || '') + '</p>';
-                    html += '<p><strong>پاسخ شما:</strong> ' + (item.user_answer || 'پاسخی داده نشده') + '</p>';
-                    html += '<p><strong>پاسخ صحیح:</strong> ' + (item.correct_answer || 'نامشخص') + '</p>';
-                    html += '<p class="' + statusClass + '">' + statusText + '</p>';
-                    html += '</div>';
-               }
-               container.innerHTML = html;
-          }
+                    html += '<div class="mdl-cell mdl-cell--4-col">';
+                    html += '<div class="stat-box">';
+                    html += '<h3>تعداد شرکت‌کنندگان</h3>';
+                    html += '<p style="font-size:2em;">' + (stats.total_participants || 0) + '</p>';
+                    html += '</div></div>';
 
-          // ===== بارگذاری صفحه =====
-          window.onload = function() {
-               renderStats(statsData);
-               renderFeedback(feedbackData.details || []);
-               if (window.componentHandler) {
-                    window.componentHandler.upgradeAllRegistered();
+                    html += '<div class="mdl-cell mdl-cell--4-col">';
+                    html += '<div class="stat-box">';
+                    html += '<h3>میانگین نمرات</h3>';
+                    html += '<p style="font-size:2em;">' + (stats.avg_score || 0) + '</p>';
+                    html += '</div></div>';
+
+                    html += '<div class="mdl-cell mdl-cell--4-col">';
+                    html += '<div class="stat-box">';
+                    html += '<h3>بالاترین/پایین‌ترین</h3>';
+                    html += '<p style="font-size:1.2em;">' + (stats.max_score || 0) + ' / ' + (stats.min_score || 0) + '</p>';
+                    html += '</div></div>';
+
+                    container.innerHTML = html;
                }
-          };
+
+               window.onload = function() {
+                    renderStudentInfo();
+                    renderStats();
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
+               };
+          })();
      </script>
      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
 </body>
