@@ -331,13 +331,44 @@ def route(path, method, data, headers):
                if not exam or not exam.get('is_published'):
                     return response._404()
                questions = question_get_by_exam.handle(item_id)
+               import datetime
+               from datetime import datetime as dt
+               now = dt.now()
+               start_time = exam.get('start_time')
+               if start_time:
+                    try:
+                         start_dt = dt.fromisoformat(start_time.replace('Z', '+00:00'))
+                         start_dt = start_dt.replace(tzinfo=None)
+                         duration_minutes = exam.get('duration', 0)
+                         end_time = start_dt + datetime.timedelta(minutes=duration_minutes)
+                         time_left = max(0, int((end_time - now).total_seconds()))
+                    except:
+                         time_left = exam.get('duration', 0) * 60
+               else:
+                    time_left = exam.get('duration', 0) * 60
                questions_json = json.dumps(questions, ensure_ascii=False)
-               html = response.render_master("exam-take.html", {
+               context = {
                     'exam': exam,
                     'questions_json': questions_json,
+                    'time_left': time_left,
                     'base_url': settings.BASE_URL
-               }, exam.get('title', 'آزمون'))
+               }
+               html = response.render_master("student/exam-take.html", context, exam.get('title', 'آزمون'))
                return response.serve_html(html)
+          #case ("/exam/take", "GET") if item_id is not None:
+          #     if not user_id or user_role != 'student':
+          #          return response._403()
+          #     exam = exam_get_one.handle(item_id, only_published=True)
+          #     if not exam or not exam.get('is_published'):
+          #          return response._404()
+          #     questions = question_get_by_exam.handle(item_id)
+          #     questions_json = json.dumps(questions, ensure_ascii=False)
+          #     html = response.render_master("exam-take.html", {
+          #          'exam': exam,
+          #          'questions_json': questions_json,
+          #          'base_url': settings.BASE_URL
+          #     }, exam.get('title', 'آزمون'))
+          #     return response.serve_html(html)
 
           case ("/exam/submit", "POST") if item_id is not None:
                if not user_id or user_role != 'student':

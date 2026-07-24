@@ -7,13 +7,24 @@
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
      <style>
-          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5;}
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
+          .mdl-card { max-width: 900px; margin: 0 auto; width: 100%; }
+          .mdl-card__supporting-text { width: 100%; box-sizing: border-box; }
           .question-container { margin-bottom: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: white; }
-          .timer-chip { background-color: #ff5252; color: white; font-size: 1.2em; padding: 8px 16px; border-radius: 16px; display: inline-block; }
-          .mdl-card { width: 100%; }
-          .option-label { display: block; padding: 8px 0; cursor: pointer; }
+          .question-container h4 { margin-bottom: 10px; }
+          .option-label { display: block; padding: 6px 0; cursor: pointer; }
           .option-label input { margin-left: 10px; }
-          .btn-submit { margin-top: 20px; }
+          .timer-bar { background: #f44336; color: white; padding: 12px 20px; border-radius: 8px; font-size: 1.2em; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+          .timer-bar .time { font-size: 1.8em; font-weight: bold; }
+          .timer-bar.warning { background: #ff9800; }
+          .timer-bar.danger { background: #f44336; animation: blink 1s infinite; }
+          @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+          .btn-submit { margin-top: 20px; width: 100%; }
+          .mdl-textfield { width: 100%; }
+          .question-type-badge { background: #e0e0e0; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 10px; }
+          .question-score { color: #666; font-size: 0.9em; }
+          .question-number { font-weight: bold; color: #3f51b5; }
      </style>
 </head>
 <body>
@@ -22,106 +33,149 @@
                <div class="mdl-card mdl-shadow--2dp">
                     <div class="mdl-card__title">
                          <h2 class="mdl-card__title-text">{{ exam.title }}</h2>
-                         <div style="margin-right: auto;">
-                         <span class="timer-chip">
-                              ⏱️ <span id="time-display">00:00</span>
-                         </span>
-                         </div>
                     </div>
                     <div class="mdl-card__supporting-text">
-                         <form id="exam-form" method="POST" action="{{ base_url }}/student/exam/submit/{{ exam.id }}">
+
+                         <div id="timer-container" class="timer-bar">
+                         <span>زمان باقی‌مانده</span>
+                         <span class="time" id="timer-display">00:00:00</span>
+                         </div>
+
+                         <form id="exam-form" method="POST" action="{{ base_url }}/exam/submit/{{ exam.id }}">
                          <div id="questions-container"></div>
-                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored btn-submit" id="submit-exam-btn">
+                         <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored btn-submit" id="submit-btn">
                               ارسال پاسخ‌ها
                          </button>
                          </form>
+
+                         <div style="margin-top: 20px;">
+                         <a href="{{ base_url }}/exams" class="mdl-button mdl-js-button mdl-button--raised">بازگشت به لیست</a>
+                         </div>
                     </div>
                </div>
           </div>
      </div>
 
+     <div id="exam-data" 
+          data-questions='{{ questions_json }}' 
+          data-time-left='{{ time_left }}'
+          data-base-url='{{ base_url }}'>
+     </div>
+
      <script>
-          // ===== دریافت داده‌ها =====
-          var questionsDataStr = '{{ questions_json }}';
-          var durationStr = '{{ exam.duration }}';
-          var baseUrl = '{{ base_url }}';
+          (function() {
+               var dataElement = document.getElementById('exam-data');
+               var questions = JSON.parse(dataElement.getAttribute('data-questions') || '[]');
+               var timeLeft = parseInt(dataElement.getAttribute('data-time-left') || '0', 10);
+               var baseUrl = dataElement.getAttribute('data-base-url') || '';
 
-          var questionsData = JSON.parse(questionsDataStr);
-          var duration = parseInt(durationStr, 10) || 0;
-          var timeLeft = duration * 60;
+               function renderQuestions() {
+                    var container = document.getElementById('questions-container');
+                    if (!container) return;
+                    if (!questions || questions.length === 0) {
+                         container.innerHTML = '<p style="text-align:center; color:#999;">هیچ سوالی برای این آزمون وجود ندارد.</p>';
+                         return;
+                    }
 
-          // ===== رندر سوالات =====
-          function renderQuestions(questions) {
-               var container = document.getElementById('questions-container');
-               if (!container) return;
-               if (!questions || questions.length === 0) {
-                    container.innerHTML = '<p style="text-align:center;">هیچ سوالی برای این آزمون تعریف نشده است.</p>';
-                    return;
-               }
+                    var html = '';
+                    for (var i = 0; i < questions.length; i++) {
+                         var q = questions[i];
+                         var qNum = i + 1;
+                         var typeText = '';
+                         if (q.question_type === 'true_false') typeText = 'صحیح/غلط';
+                         else if (q.question_type === 'single') typeText = 'تستی (یک گزینه)';
+                         else if (q.question_type === 'descriptive') typeText = 'تشریحی';
+                         else typeText = q.question_type || '';
 
-               var html = '';
-               for (var i = 0; i < questions.length; i++) {
-                    var q = questions[i];
-                    var qNum = i + 1;
-                    html += '<div class="question-container">';
-                    html += '<h4>سوال ' + qNum + ': ' + (q.question_text || '') + '</h4>';
-                    html += '<p><small>نمره: ' + (q.score || 0) + '</small></p>';
+                         html += '<div class="question-container">';
+                         html += '<h4><span class="question-number">سوال ' + qNum + ':</span> ' + (q.question_text || '') + 
+                              ' <span class="question-type-badge">' + typeText + '</span>' +
+                              ' <span class="question-score">(نمره: ' + (q.score || 0) + ')</span></h4>';
 
-                    if (q.question_type === 'single' || q.question_type === 'multiple') {
-                         var inputType = (q.question_type === 'single') ? 'radio' : 'checkbox';
+                         if (q.question_type === 'true_false' || q.question_type === 'single') {
                          var answers = q.answers || [];
-                         for (var j = 0; j < answers.length; j++) {
-                         var ans = answers[j];
-                         html += '<label class="option-label" for="q' + q.id + '_' + ans.id + '">';
-                         html += '<input type="' + inputType + '" id="q' + q.id + '_' + ans.id + '" ';
-                         html += 'name="question_' + q.id + '" value="' + ans.id + '">';
-                         html += '<span>' + ans.answer_text + '</span>';
-                         html += '</label>';
+                         if (answers.length === 0) {
+                              html += '<p style="color:#999;">هیچ گزینه‌ای برای این سوال تعریف نشده است.</p>';
+                         } else {
+                              for (var j = 0; j < answers.length; j++) {
+                                   var ans = answers[j];
+                                   html += '<label class="option-label" for="q' + q.id + '_' + ans.id + '">';
+                                   html += '<input type="radio" id="q' + q.id + '_' + ans.id + '" ' +
+                                        'name="question_' + q.id + '" value="' + ans.answer_text + '">';
+                                   html += '<span>' + ans.answer_text + '</span>';
+                                   html += '</label>';
+                              }
                          }
-                    } else {
-                         html += '<div class="mdl-textfield mdl-js-textfield" style="width: 100%;">';
-                         html += '<textarea class="mdl-textfield__input" id="q' + q.id + '" name="question_' + q.id + '" rows="3"></textarea>';
+                         } else if (q.question_type === 'descriptive') {
+                         html += '<div class="mdl-textfield mdl-js-textfield" style="width:100%;">';
+                         html += '<textarea class="mdl-textfield__input" id="q' + q.id + '" name="question_' + q.id + '" rows="4"></textarea>';
                          html += '<label class="mdl-textfield__label" for="q' + q.id + '">پاسخ خود را وارد کنید...</label>';
                          html += '</div>';
+                         }
+
+                         html += '</div>';
+                    }
+                    container.innerHTML = html;
+
+                    if (window.componentHandler) {
+                         window.componentHandler.upgradeAllRegistered();
+                    }
+               }
+
+               function startTimer(totalSeconds) {
+                    var display = document.getElementById('timer-display');
+                    var container = document.getElementById('timer-container');
+                    if (!display) return;
+
+                    function updateDisplay(seconds) {
+                         var hours = Math.floor(seconds / 3600);
+                         var minutes = Math.floor((seconds % 3600) / 60);
+                         var secs = seconds % 60;
+                         display.textContent = 
+                         String(hours).padStart(2, '0') + ':' + 
+                         String(minutes).padStart(2, '0') + ':' + 
+                         String(secs).padStart(2, '0');
+
+                         if (container) {
+                         container.className = 'timer-bar';
+                         if (seconds < 60) {
+                              container.classList.add('danger');
+                         } else if (seconds < 300) {
+                              container.classList.add('warning');
+                         }
+                         }
                     }
 
-                    html += '</div>';
-               }
-               container.innerHTML = html;
-          }
+                    var remaining = totalSeconds;
+                    updateDisplay(remaining);
 
-          // ===== تایمر =====
-          function startTimer(totalSeconds) {
-               var display = document.getElementById('time-display');
-               if (!display) return;
-               var timerInterval = setInterval(function() {
-                    var minutes = Math.floor(totalSeconds / 60);
-                    var seconds = totalSeconds % 60;
-                    display.textContent = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-                    if (totalSeconds <= 0) {
+                    var timerInterval = setInterval(function() {
+                         remaining--;
+                         updateDisplay(remaining);
+                         if (remaining <= 0) {
                          clearInterval(timerInterval);
-                         alert('زمان شما به پایان رسید!');
+                         alert('زمان شما به پایان رسید! پاسخ‌ها به صورت خودکار ارسال می‌شوند.');
                          document.getElementById('exam-form').submit();
-                    }
-                    totalSeconds--;
-               }, 1000);
-          }
+                         }
+                    }, 1000);
 
-          // ===== بارگذاری صفحه =====
-          window.onload = function() {
-               renderQuestions(questionsData);
-               if (duration > 0) startTimer(duration * 60);
+                    window.addEventListener('beforeunload', function(e) {
+                         e.preventDefault();
+                         e.returnValue = 'آیا از خروج از صفحه اطمینان دارید؟ پاسخ‌های شما ذخیره نخواهد شد.';
+                    });
 
-               // جلوگیری از خروج تصادفی
-               window.addEventListener('beforeunload', function(e) {
-                    e.preventDefault();
-                    e.returnValue = '';
-               });
-
-               if (window.componentHandler) {
-                    window.componentHandler.upgradeAllRegistered();
+                    return timerInterval;
                }
-          };
+
+               window.onload = function() {
+                    renderQuestions();
+                    if (timeLeft > 0) {
+                         startTimer(timeLeft);
+                    } else {
+                         document.getElementById('timer-display').textContent = 'زمان نامشخص';
+                    }
+               };
+          })();
      </script>
      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
 </body>

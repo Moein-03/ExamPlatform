@@ -1,28 +1,37 @@
 # controllers/question_get_by_exam.py
 import sqlite3
 import settings
-import json
 
 def handle(exam_id):
-     dbc = sqlite3.connect(settings.DB_PATH)
-     dbc.row_factory = sqlite3.Row
-     cursor = dbc.cursor()
+     conn = sqlite3.connect(str(settings.DB_PATH))
+     conn.row_factory = sqlite3.Row
+     cursor = conn.cursor()
+
      cursor.execute('''
           SELECT q.*, eq.order_num
-          FROM questions q
-          JOIN exam_questions eq ON eq.question_id = q.id
+          FROM TBL_questions q
+          JOIN TBL_exam_questions eq ON eq.question_id = q.id
           WHERE eq.exam_id = ?
           ORDER BY eq.order_num
      ''', (exam_id,))
      rows = cursor.fetchall()
-     dbc.close()
+     conn.close()
+
      results = []
      for row in rows:
-          item = dict(row)
-          if item.get('options'):
-               try:
-                    item['options'] = json.loads(item['options'])
-               except:
-                    item['options'] = []
-          results.append(item)
+          q = dict(row)
+          conn2 = sqlite3.connect(str(settings.DB_PATH))
+          conn2.row_factory = sqlite3.Row
+          cursor2 = conn2.cursor()
+          cursor2.execute('''
+               SELECT id, answer_text, is_correct
+               FROM TBL_answers
+               WHERE question_id = ?
+               ORDER BY id ASC
+          ''', (q['id'],))
+          answers = cursor2.fetchall()
+          conn2.close()
+          q['answers'] = [dict(a) for a in answers]
+          results.append(q)
+
      return results
