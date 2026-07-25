@@ -90,11 +90,11 @@
                if (isLoggedIn) {
                     buttonsHTML = `
                          <a href="{{ base_url }}/dashboard" 
-                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="display:flex; align-items:center; justify-content: center">
                               ورود به داشبورد
                          </a>
                          <a href="{{ base_url }}/exams" 
-                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" style="display:flex; align-items:center; justify-content: center">
                          <i class="material-icons" style="margin-left:8px;vertical-align:middle;">list_alt</i>
                               مشاهده آزمون‌ها
                          </a>
@@ -102,11 +102,11 @@
                } else {
                     buttonsHTML = `
                          <a href="{{ base_url }}/login" 
-                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="display:flex; align-items:center; justify-content: center">
                               ورود به سامانه
                          </a>
                          <a href="{{ base_url }}/register" 
-                         class="mdl-button mdl-js-button mdl-button--raised">
+                         class="mdl-button mdl-js-button mdl-button--raised" style="display:flex; align-items:center; justify-content: center">
                               ثبت نام جدید
                          </a>
                     `;

@@ -488,19 +488,17 @@ def route(path, method, data, headers):
                if not question:
                     return response._404()
                answers = answer_get_by_question.handle(item_id)
-               
                question_json = json.dumps(question, ensure_ascii=False)
                answers_json = json.dumps(answers, ensure_ascii=False)
-               question_id_json = json.dumps(question['id'])
-               
                context = {
+                    'mode': 'edit',
                     'question_json': question_json,
                     'answers_json': answers_json,
-                    'question_id_json': question_id_json,
+                    'question_id': question['id'],
                     'base_url': settings.BASE_URL,
-                    'error': '' 
+                    'error': ''
                }
-               html = response.render_master("question-edit.html", context, "ویرایش سوال")
+               html = response.render_master("question-form.html", context, "ویرایش سوال")
                return response.serve_html(html)
 
           case ("/question/edit", "POST") if item_id is not None:

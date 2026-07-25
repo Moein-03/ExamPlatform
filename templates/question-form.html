@@ -6,25 +6,12 @@
     <title>سوال جدید</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    
     <style>
         * { box-sizing: border-box; }
-        body { 
-            direction: rtl; 
-            background: #f5f5f5; 
-        }
-        .mdl-card {
-            max-width: 780px;
-            margin: 20px auto;
-            width: 96%;
-        }
-        .mdl-card__title {
-            background: #3f51b5;
-            color: white;
-        }
-        .mdl-card__supporting-text {
-            padding: 32px 40px;
-        }
+        body { direction: rtl; background: #f5f5f5; }
+        .mdl-card { max-width: 780px; margin: 0 auto; width: 100%; }
+        .mdl-card__title { background: #3f51b5; color: white; }
+        .mdl-card__supporting-text { padding: 32px 40px; }
         .answer-row {
             background: #f8f9fa;
             padding: 16px;
@@ -34,6 +21,8 @@
             align-items: center;
             gap: 12px;
         }
+        .error-message { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+        .error-message.hidden { display: none; }
         @media (max-width: 600px) {
             .mdl-card__supporting-text { padding: 20px; }
             .answer-row { flex-direction: column; align-items: stretch; }
@@ -45,16 +34,12 @@
         <div class="mdl-cell mdl-cell--12-col">
             <div class="mdl-card mdl-shadow--3dp">
                 <div class="mdl-card__title">
-                    <h2 class="mdl-card__title-text">افزودن سوال جدید</h2>
+                    <h2 class="mdl-card__title-text" id="form-title">افزودن سوال جدید</h2>
                 </div>
                 <div class="mdl-card__supporting-text">
-                    
-                    <div id="error-container" class="error-message {{ 'hidden' if not error else '' }}">
-                        {{ error }}
-                    </div>
+                    <div id="error-container" class="error-message hidden">{{ error }}</div>
 
-                    <form id="question-form" method="POST" action="{{ base_url }}/question/add">
-                        
+                    <form id="question-form" method="POST">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                             <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="4" required></textarea>
                             <label class="mdl-textfield__label">متن سوال</label>
@@ -66,7 +51,6 @@
                                     <select id="question_type" name="question_type" class="mdl-textfield__input" onchange="handleQuestionTypeChange()">
                                         <option value="true_false">صحیح / غلط</option>
                                         <option value="single">چند گزینه‌ای (یک پاسخ)</option>
-                                        <!-- <option value="descriptive">تشریحی</option> -->
                                     </select>
                                     <label class="mdl-textfield__label">نوع سوال</label>
                                 </div>
@@ -80,7 +64,7 @@
                         </div>
 
                         <div id="answers-section">
-                            <div class="flex justify-between items-center mb-4">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                                 <h4 id="answers-title" class="mdl-typography--title">گزینه‌ها</h4>
                                 <button type="button" id="add-btn" onclick="addOption()" 
                                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" style="display:none;">
@@ -91,7 +75,7 @@
                         </div>
 
                         <div style="margin-top: 40px;">
-                            <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                            <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="submit-btn">
                                 ذخیره سوال
                             </button>
                             <a href="{{ base_url }}/questions" class="mdl-button mdl-js-button mdl-button--raised" style="margin-right: 16px;">
@@ -104,93 +88,209 @@
         </div>
     </div>
 
+    <div id="form-data" 
+         data-mode='{{ mode }}'
+         data-question='{{ question_json }}'
+         data-answers='{{ answers_json }}'
+         data-question-id='{{ question_id }}'
+         data-base-url='{{ base_url }}'
+         data-error='{{ error }}'>
+    </div>
+
     <script>
-        let tempAnswers = [];
+        (function() {
+            var dataEl = document.getElementById('form-data');
+            var mode = dataEl.getAttribute('data-mode') || 'add';
+            var questionDataStr = dataEl.getAttribute('data-question') || 'null';
+            var answersDataStr = dataEl.getAttribute('data-answers') || 'null';
+            var questionId = dataEl.getAttribute('data-question-id') || null;
+            var baseUrl = dataEl.getAttribute('data-base-url') || '';
+            var errorText = dataEl.getAttribute('data-error') || '';
 
-        function handleQuestionTypeChange() {
-            const type = document.getElementById('question_type').value;
-            const section = document.getElementById('answers-section');
-            const addBtn = document.getElementById('add-btn');
-            
-            if (type === 'descriptive') {
-                section.style.display = 'none';
-                return;
+            var errorContainer = document.getElementById('error-container');
+            if (errorText && errorContainer) {
+                errorContainer.textContent = errorText;
+                errorContainer.classList.remove('hidden');
             }
-            
-            section.style.display = 'block';
-            addBtn.style.display = type === 'single' ? 'inline-flex' : 'none';
 
-            if (type === 'true_false') {
-                document.getElementById('answers-title').textContent = 'گزینه‌های صحیح/غلط';
-                tempAnswers = [
-                    {text: 'صحیح', is_correct: 1},
-                    {text: 'غلط', is_correct: 0}
-                ];
-            } else if (type === 'single') {
-                document.getElementById('answers-title').textContent = 'گزینه‌ها';
-                if (tempAnswers.length < 2) {
-                    tempAnswers = [];
+            var question = null;
+            var answers = [];
+            try {
+                if (questionDataStr && questionDataStr !== 'null') {
+                    question = JSON.parse(questionDataStr);
+                }
+                if (answersDataStr && answersDataStr !== 'null') {
+                    answers = JSON.parse(answersDataStr);
+                }
+            } catch(e) {
+                console.error('خطا در解析 داده‌ها', e);
+            }
+
+            var isEdit = (mode === 'edit' && question);
+            var tempAnswers = [];
+
+            document.getElementById('form-title').textContent = isEdit ? 'ویرایش سوال' : 'افزودن سوال جدید';
+            document.getElementById('submit-btn').textContent = isEdit ? 'ذخیره تغییرات' : 'ذخیره سوال';
+
+            function fillForm() {
+                if (!isEdit) return;
+                document.getElementById('question_text').value = question.question_text || '';
+                document.getElementById('question_type').value = question.question_type || 'true_false';
+                document.getElementById('score').value = question.score || 1;
+                tempAnswers = answers.map(function(a) {
+                    return { text: a.answer_text, is_correct: a.is_correct };
+                });
+                var form = document.getElementById('question-form');
+                form.action = baseUrl + '/question/edit/' + questionId;
+            }
+
+            function handleQuestionTypeChange() {
+                var type = document.getElementById('question_type').value;
+                var section = document.getElementById('answers-section');
+                var addBtn = document.getElementById('add-btn');
+                
+                if (type === 'descriptive') {
+                    section.style.display = 'none';
+                    return;
+                }
+                
+                section.style.display = 'block';
+                addBtn.style.display = type === 'single' ? 'inline-flex' : 'none';
+
+                if (type === 'true_false') {
+                    document.getElementById('answers-title').textContent = 'گزینه‌های صحیح/غلط';
+                    if (tempAnswers.length !== 2) {
+                        tempAnswers = [
+                            {text: 'صحیح', is_correct: 1},
+                            {text: 'غلط', is_correct: 0}
+                        ];
+                    } else {
+                        var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
+                        if (!hasCorrect) {
+                            tempAnswers[0].is_correct = 1;
+                            tempAnswers[1].is_correct = 0;
+                        }
+                    }
+                } else if (type === 'single') {
+                    document.getElementById('answers-title').textContent = 'گزینه‌ها';
+                    if (tempAnswers.length === 0) {
+                        tempAnswers = [];
+                    }
+                }
+                renderAnswers();
+            }
+
+            function renderAnswers() {
+                var container = document.getElementById('answers-container');
+                if (!container) return;
+                if (tempAnswers.length === 0) {
+                    container.innerHTML = '<p style="color:#999;">هیچ گزینه‌ای تعریف نشده است.</p>';
+                    return;
+                }
+                var html = '';
+                tempAnswers.forEach(function(ans, i) {
+                    var isCorrect = ans.is_correct ? 'checked' : '';
+                    html += '<div class="answer-row">';
+                    html += '<div style="flex:1">';
+                    html += '<input type="text" class="mdl-textfield__input" value="' + (ans.text || '') + '" ';
+                    html += 'oninput="tempAnswers[' + i + '].text = this.value" style="width:100%">';
+                    html += '</div>';
+                    html += '<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect">';
+                    html += '<input type="radio" name="correct" ' + isCorrect + ' ';
+                    html += 'onchange="setCorrect(' + i + ')">';
+                    html += '<span class="mdl-radio__label">صحیح</span>';
+                    html += '</label>';
+                    if (tempAnswers.length > 2 || (document.getElementById('question_type').value === 'true_false' && tempAnswers.length > 2)) {
+                        html += '<button onclick="removeAnswer(' + i + ')" class="mdl-button mdl-js-button mdl-button--icon" style="color:#f44336;">';
+                        html += '<i class="material-icons">delete</i></button>';
+                    }
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+                if (window.componentHandler) {
+                    window.componentHandler.upgradeAllRegistered();
                 }
             }
-            renderAnswers();
-        }
 
-        function renderAnswers() {
-            let html = '';
-            tempAnswers.forEach((ans, i) => {
-                html += `
-                    <div class="answer-row">
-                        <div style="flex:1">
-                            <input type="text" class="mdl-textfield__input" value="${ans.text}" 
-                                   oninput="tempAnswers[${i}].text = this.value" style="width:100%">
-                        </div>
-                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect">
-                            <input type="radio" name="correct" ${ans.is_correct ? 'checked' : ''} 
-                                   onchange="setCorrect(${i})">
-                            <span class="mdl-radio__label">صحیح</span>
-                        </label>
-                        ${tempAnswers.length > 2 ? 
-                            `<button onclick="removeAnswer(${i})" class="mdl-button mdl-js-button mdl-button--icon" style="color:#f44336;">
-                                <i class="material-icons">delete</i>
-                             </button>` : ''}
-                    </div>`;
+            function setCorrect(index) {
+                tempAnswers.forEach(function(a, i) {
+                    a.is_correct = (i === index) ? 1 : 0;
+                });
+            }
+
+            function addOption() {
+                var text = prompt("متن گزینه جدید را وارد کنید:");
+                if (text && text.trim()) {
+                    tempAnswers.push({ text: text.trim(), is_correct: 0 });
+                    renderAnswers();
+                }
+            }
+
+            function removeAnswer(index) {
+                var type = document.getElementById('question_type').value;
+                if (type === 'true_false' && tempAnswers.length <= 2) {
+                    alert("برای سوال صحیح/غلط حداقل دو گزینه لازم است.");
+                    return;
+                }
+                if (type === 'single' && tempAnswers.length <= 2) {
+                    alert("برای سوال چند گزینه‌ای حداقل دو گزینه لازم است.");
+                    return;
+                }
+                tempAnswers.splice(index, 1);
+                var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
+                if (!hasCorrect && tempAnswers.length > 0) {
+                    tempAnswers[0].is_correct = 1;
+                }
+                renderAnswers();
+            }
+
+            document.getElementById('question-form').addEventListener('submit', function(e) {
+                var type = document.getElementById('question_type').value;
+                if (type === 'true_false' && tempAnswers.length !== 2) {
+                    e.preventDefault();
+                    alert("برای سوال صحیح/غلط دقیقاً دو گزینه نیاز است.");
+                    return;
+                }
+                if (type === 'single' && tempAnswers.length < 2) {
+                    e.preventDefault();
+                    alert("برای سوال چند گزینه‌ای حداقل دو گزینه باید اضافه کنید.");
+                    return;
+                }
+                var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
+                if (!hasCorrect) {
+                    e.preventDefault();
+                    alert("لطفاً یکی از گزینه‌ها را به عنوان پاسخ صحیح انتخاب کنید.");
+                    return;
+                }
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'answers';
+                input.value = JSON.stringify(tempAnswers);
+                this.appendChild(input);
             });
-            document.getElementById('answers-container').innerHTML = html || '<p class="text-gray-500">گزینه‌ای وجود ندارد.</p>';
-        }
 
-        function setCorrect(index) {
-            tempAnswers.forEach((a, i) => a.is_correct = (i === index) ? 1 : 0);
-        }
+            window.onload = function() {
+                if (isEdit) {
+                    fillForm();
+                } else {
+                    tempAnswers = [
+                        {text: 'صحیح', is_correct: 1},
+                        {text: 'غلط', is_correct: 0}
+                    ];
+                }
+                handleQuestionTypeChange();
+                if (window.componentHandler) {
+                    window.componentHandler.upgradeAllRegistered();
+                }
+            };
 
-        function addOption() {
-            const text = prompt("متن گزینه جدید را وارد کنید:");
-            if (text && text.trim()) {
-                tempAnswers.push({ text: text.trim(), is_correct: 0 });
-                renderAnswers();
-            }
-        }
+            window.handleQuestionTypeChange = handleQuestionTypeChange;
+            window.addOption = addOption;
+            window.removeAnswer = removeAnswer;
+            window.setCorrect = setCorrect;
+            window.tempAnswers = tempAnswers;
 
-        function removeAnswer(i) {
-            if (tempAnswers.length > 2) {
-                tempAnswers.splice(i, 1);
-                renderAnswers();
-            } else {
-                alert("حداقل دو گزینه لازم است.");
-            }
-        }
-
-        document.getElementById('question-form').addEventListener('submit', function(e) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'answers';
-            input.value = JSON.stringify(tempAnswers);
-            this.appendChild(input);
-        });
-
-        window.onload = () => {
-            handleQuestionTypeChange();
-            if (window.componentHandler) window.componentHandler.upgradeAllRegistered();
-        };
+        })();
     </script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
 </body>
