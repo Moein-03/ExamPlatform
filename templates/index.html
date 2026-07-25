@@ -3,7 +3,7 @@
 <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>سامانه مدیریت آزمون‌ها</title>
+     <title>پلتفرم آزمون آنلاین</title>
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
      
@@ -70,7 +70,7 @@
 
                <div class="hero-header">
                     <i class="material-icons">school</i>
-                    <h1>سامانه مدیریت آزمون‌ها</h1>
+                    <h1>پلتفرم آزمون آنلاین</h1>
                     <p>پلتفرم هوشمند برگزاری و مدیریت آزمون‌های آنلاین</p>
                </div>
 
@@ -88,28 +88,26 @@
                var buttonsHTML = '';
 
                if (isLoggedIn) {
-                    // کاربر وارد شده
                     buttonsHTML = `
                          <a href="{{ base_url }}/dashboard" 
                          class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-                         ورود به داشبورد
+                              ورود به داشبورد
                          </a>
                          <a href="{{ base_url }}/exams" 
                          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
                          <i class="material-icons" style="margin-left:8px;vertical-align:middle;">list_alt</i>
-                         مشاهده آزمون‌ها
+                              مشاهده آزمون‌ها
                          </a>
                     `;
                } else {
-                    // کاربر مهمان
                     buttonsHTML = `
                          <a href="{{ base_url }}/login" 
                          class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-                         ورود به سامانه
+                              ورود به سامانه
                          </a>
                          <a href="{{ base_url }}/register" 
                          class="mdl-button mdl-js-button mdl-button--raised">
-                         ثبت نام جدید
+                              ثبت نام جدید
                          </a>
                     `;
                }

@@ -379,6 +379,7 @@ def route(path, method, data, headers):
                
                questions_json = json.dumps(questions, ensure_ascii=False)
                context = {
+                    'exam_title': exam.get('title', 'آزمون'),
                     'exam': exam,
                     'exam_id': exam['id'],
                     'questions_json': questions_json,

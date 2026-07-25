@@ -139,13 +139,13 @@
                     searchInput.addEventListener('input', function() {
                          var term = this.value.toLowerCase().trim();
                          if (!term) {
-                         renderUsers(users);
-                         return;
+                              renderUsers(users);
+                              return;
                          }
-                         var filtered = users.filter(function(u) {
-                         var name = (u.fullname || '').toLowerCase();
-                         var email = (u.email || '').toLowerCase();
-                         return name.includes(term) || email.includes(term);
+                              var filtered = users.filter(function(u) {
+                              var name = (u.fullname || '').toLowerCase();
+                              var email = (u.email || '').toLowerCase();
+                              return name.includes(term) || email.includes(term);
                          });
                          renderUsers(filtered);
                     });

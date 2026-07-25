@@ -59,14 +59,10 @@
 <body>
      <div class="main-container">
           <div class="mdl-card mdl-shadow--6dp">
-               
-               <!-- Header -->
                <div class="card-header">
                     <i class="material-icons" style="font-size: 42px;">login</i>
                     <h2>ورود به سامانه</h2>
                </div>
-
-               <!-- Form -->
                <div class="form-content">
                     <div id="error-container" class="error-message"></div>
                     
@@ -101,20 +97,17 @@
                var base_url = window.__DATA__ ? window.__DATA__.base_url : '';
                var error = '{{ error }}' || '';
 
-               // تنظیم لینک‌ها
                document.querySelectorAll('[data-link]').forEach(link => {
                     var path = link.getAttribute('data-link');
                     if (path) link.href = base_url + path;
                });
 
-               // نمایش خطا
                if (error) {
                     const errContainer = document.getElementById('error-container');
                     errContainer.textContent = error;
                     errContainer.style.display = 'block';
                }
 
-               // اعتبارسنجی ساده
                const form = document.getElementById('login-form');
                form.addEventListener('submit', function(e) {
                     const username = document.getElementById('username').value.trim();

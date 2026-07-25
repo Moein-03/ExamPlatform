@@ -29,7 +29,7 @@
                     </div>
                     <div class="mdl-card__supporting-text">
                          <div id="error-container" class="error-message {{ 'hidden' if not error else '' }}">
-                         {{ error }}
+                              {{ error }}
                          </div>
                          
                          <form id="question-form" method="POST">
@@ -113,11 +113,11 @@
                          }
                     } else if (questionType === 'single') {
                          if (initialAnswers && initialAnswers.length > 0) {
-                         tempAnswers = initialAnswers.map(function(a) {
-                              return { text: a.answer_text, is_correct: a.is_correct };
-                         });
+                              tempAnswers = initialAnswers.map(function(a) {
+                                   return { text: a.answer_text, is_correct: a.is_correct };
+                              });
                          } else {
-                         tempAnswers = [];
+                              tempAnswers = [];
                          }
                     } else {
                          tempAnswers = [];
@@ -150,10 +150,10 @@
                     if (qType === 'true_false') {
                          document.getElementById('answers-title').textContent = 'گزینه های صحیح/غلط';
                          if (tempAnswers.length !== 2) {
-                         tempAnswers = [
-                              { text: '', is_correct: 0 },
-                              { text: '', is_correct: 0 }
-                         ];
+                              tempAnswers = [
+                                   { text: '', is_correct: 0 },
+                                   { text: '', is_correct: 0 }
+                              ];
                          }
                          renderTrueFalse();
                     } else if (qType === 'single') {
@@ -220,19 +220,19 @@
                          html += '<tr><td colspan="3" style="text-align:center;">هیچ گزینه ای تعریف نشده است.</td></tr>';
                     } else {
                          for (var i = 0; i < tempAnswers.length; i++) {
-                         var ans = tempAnswers[i];
-                         var statusText = ans.is_correct ? 'صحیح' : 'نادرست';
-                         var checked = ans.is_correct ? 'checked' : '';
-                         html += '<tr id="single-row-' + i + '">';
-                         html += '<td class="mdl-data-table__cell--non-numeric">' + (ans.text || '') + '</td>';
-                         html += '<td>';
-                         html += '<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="single_radio_' + i + '">';
-                         html += '<input type="radio" id="single_radio_' + i + '" name="single_correct" value="' + i + '" ' + checked + ' onchange="selectSingle(' + i + ')">';
-                         html += '<span class="mdl-radio__label">انتخاب به عنوان صحیح</span>';
-                         html += '</label>';
-                         html += '</td>';
-                         html += '<td><button type="button" class="mdl-button mdl-js-button mdl-button--icon btn-delete-answer" onclick="removeSingleAnswer(' + i + ')"><i class="material-icons">delete</i></button></td>';
-                         html += '</tr>';
+                              var ans = tempAnswers[i];
+                              var statusText = ans.is_correct ? 'صحیح' : 'نادرست';
+                              var checked = ans.is_correct ? 'checked' : '';
+                              html += '<tr id="single-row-' + i + '">';
+                              html += '<td class="mdl-data-table__cell--non-numeric">' + (ans.text || '') + '</td>';
+                              html += '<td>';
+                              html += '<label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="single_radio_' + i + '">';
+                              html += '<input type="radio" id="single_radio_' + i + '" name="single_correct" value="' + i + '" ' + checked + ' onchange="selectSingle(' + i + ')">';
+                              html += '<span class="mdl-radio__label">انتخاب به عنوان صحیح</span>';
+                              html += '</label>';
+                              html += '</td>';
+                              html += '<td><button type="button" class="mdl-button mdl-js-button mdl-button--icon btn-delete-answer" onclick="removeSingleAnswer(' + i + ')"><i class="material-icons">delete</i></button></td>';
+                              html += '</tr>';
                          }
                     }
                     html += '</tbody></table>';
@@ -270,29 +270,29 @@
 
                     if (qType === 'true_false') {
                          if (!tempAnswers[0].text.trim() || !tempAnswers[1].text.trim()) {
-                         e.preventDefault();
-                         alert('لطفاً هر دو گزینه (صحیح و غلط) را پر کنید.');
-                         return;
+                              e.preventDefault();
+                              alert('لطفاً هر دو گزینه (صحیح و غلط) را پر کنید.');
+                              return;
                          }
                          var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
                          if (!hasCorrect) {
-                         e.preventDefault();
-                         alert('لطفاً یکی از گزینه ها را به عنوان صحیح انتخاب کنید.');
-                         return;
+                              e.preventDefault();
+                              alert('لطفاً یکی از گزینه ها را به عنوان صحیح انتخاب کنید.');
+                              return;
                          }
                     }
 
                     if (qType === 'single') {
                          if (tempAnswers.length < 2) {
-                         e.preventDefault();
-                         alert('برای سوال چند گزینه ای حداقل دو گزینه باید اضافه کنید.');
-                         return;
+                              e.preventDefault();
+                              alert('برای سوال چند گزینه ای حداقل دو گزینه باید اضافه کنید.');
+                              return;
                          }
                          var hasCorrect = tempAnswers.some(function(a) { return a.is_correct === 1; });
                          if (!hasCorrect) {
-                         e.preventDefault();
-                         alert('لطفاً یکی از گزینه ها را به عنوان صحیح انتخاب کنید.');
-                         return;
+                              e.preventDefault();
+                              alert('لطفاً یکی از گزینه ها را به عنوان صحیح انتخاب کنید.');
+                              return;
                          }
                     }
 

@@ -121,11 +121,11 @@
                          html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon btn-delete" title="حذف"><i class="material-icons">delete</i></button>';
                          html += '</form>';
                     } else if (userRole === 'student') {
-                         html += '<a href="' + baseUrl + '/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-view" title="مشاهده"><i class="material-icons">visibility</i></a>';
+                              html += '<a href="' + baseUrl + '/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-view" title="مشاهده"><i class="material-icons">visibility</i></a>';
                          if (e.exam_status === 'در حال برگزاری') {
-                         html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
+                              html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
                          } else {
-                         html += '<span class="mdl-button mdl-js-button mdl-button--icon btn-disabled" title="غیرفعال"><i class="material-icons">play_arrow</i></span>';
+                              html += '<span class="mdl-button mdl-js-button mdl-button--icon btn-disabled" title="غیرفعال"><i class="material-icons">play_arrow</i></span>';
                          }
                     }
                     html += '</td>';
