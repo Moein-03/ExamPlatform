@@ -44,9 +44,7 @@
 
                          <div class="btn-group" id="action-buttons"></div>
 
-                         <div style="margin-top: 20px;">
-                         <a href="{{ base_url }}/exams" class="mdl-button mdl-js-button mdl-button--raised">بازگشت به لیست</a>
-                         </div>
+                         <div style="margin-top: 10px;" id="opBtn"></div>
                     </div>
                </div>
           </div>
@@ -81,8 +79,7 @@
                     html += '<div class="info-row"><span class="info-label" style="width: 25%;">نمره کل:</span><span class="info-value">' + (exam.total_score || 0) + '</span></div>';
                     html += '<div class="info-row"><span class="info-label" style="width: 25%;">تعداد سوالات:</span><span class="info-value">' + (exam.total_questions || 0) + '</span></div>';
                     html += '<div class="info-row"><span class="info-label" style="width: 25%;">وضعیت:</span><span class="info-value"><span class="status-badge ' + statusClass + '">' + statusText + '</span></span></div>';
-                    html += '<div class="info-row"><span class="info-label" style="width: 25%;">انتخاب تصادفی:</span><span class="info-value">' + (exam.is_random ? 'بله' : 'خیر') + '</span></div>';
-
+                    /* html += '<div class="info-row"><span class="info-label" style="width: 25%;">انتخاب تصادفی:</span><span class="info-value">' + (exam.is_random ? 'بله' : 'خیر') + '</span></div>'; */
                     container.innerHTML = html;
                     document.getElementById('exam-title').textContent = 'جزئیات آزمون: ' + (exam.title || '');
                }
@@ -120,9 +117,19 @@
                     container.innerHTML = html;
                }
 
+               function renderBottomButtons() {
+                    var container = document.getElementById('opBtn');
+                    if (!container) return;
+                    var btn = '';
+                    btn += '<a href="' + baseUrl + '/exams" class="mdl-button mdl-js-button mdl-button--raised">بازگشت به لیست</a>';
+                    btn += '<a href="' + baseUrl + '/exam/feedback/' + exam.id + '" class="mdl-button mdl-js-button mdl-button--raised" style="margin-right: 10px; color: white; background-color: green;">نتیجه آزمون</a>';
+                    container.innerHTML = btn;
+               }
+
                window.onload = function() {
                     renderExamInfo();
                     renderActions();
+                    renderBottomButtons();
                     if (window.componentHandler) {
                          window.componentHandler.upgradeAllRegistered();
                     }
