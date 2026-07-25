@@ -34,8 +34,8 @@
                     <div class="mdl-card__supporting-text">
                          <div class="header-actions">
                          <a href="{{ base_url }}/question/add" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">سوال جدید</a>
-                         <a href="{{ base_url }}/question/import" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">وارد کردن سوالات</a>
-                         <a href="{{ base_url }}/question/export" class="mdl-button mdl-js-button mdl-button--raised">خروجی سوالات</a>
+                         <!-- <a href="{{ base_url }}/question/import" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">وارد کردن سوالات</a>
+                         <a href="{{ base_url }}/question/export" class="mdl-button mdl-js-button mdl-button--raised">خروجی سوالات</a> -->
                          </div>
                          <div class="table-container">
                          <table>
@@ -80,8 +80,6 @@
                          typeText = 'چند گزینه ای (یک پاسخ)';
                     } else if (q.question_type === 'multiple') {
                          typeText = 'چند گزینه ای (چند پاسخ)';
-                    } else if (q.question_type === 'descriptive') {
-                         typeText = 'تشریحی';
                     } else {
                          typeText = q.question_type || 'نامشخص';
                     }
@@ -90,7 +88,6 @@
                     html += '<td>' + typeText + '</td>';
                     html += '<td>' + (q.score || 0) + '</td>';
                     html += '<td>';
-                    /* html += '<a href="' + baseUrl + '/question/edit/' + q.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon" title="ویرایش"><i class="material-icons">edit</i></a>'; */
                     html += '<form method="POST" action="' + baseUrl + '/question/delete/' + q.id + '" style="display:inline;" onsubmit="return confirm(\'آیا از حذف این سوال اطمینان دارید؟\');">';
                     html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon btn-delete" title="حذف"><i class="material-icons">delete</i></button>';
                     html += '</form>';
