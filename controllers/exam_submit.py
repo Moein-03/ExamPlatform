@@ -16,7 +16,7 @@ def handle(exam_id, student_id, data):
           cursor.execute("SELECT id, status FROM TBL_exam_users WHERE exam_id = ? AND user_id = ?", (exam_id, student_id))
           participant = cursor.fetchone()
           if not participant:
-               return "شما در این آزمون ثبت‌نام نشده‌اید"
+               return "شما در این آزمون ثبت‌ نام نشده‌اید"
           if participant[1] == 'completed':
                return "شما قبلاً در این آزمون شرکت کرده‌اید"
 
