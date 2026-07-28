@@ -44,21 +44,26 @@ def _200(message, headers=None):
 def _401(headers=None):
      if headers is None:
           headers = {}
-     headers['Content-Type'] = 'text/html; charset=utf-8'
-     return ("<h1>401 - نیاز به ورود</h1><p>لطفاً ابتدا وارد شوید.</p>", 401, headers)
+     render_template('errors/401.html', headers)
 
 def _403(headers=None):
      if headers is None:
           headers = {}
      headers['Content-Type'] = 'text/html; charset=utf-8'
-     return ("<h1>403 - دسترسی ممنوع</h1>", 403, headers)
+     render_template()
+     render_template('errors/403.html', headers)
 
 def _404(headers=None):
      if headers is None:
           headers = {}
      headers['Content-Type'] = 'text/html; charset=utf-8'
-     return ("<h1>404 - صفحه یافت نشد</h1>", 404, headers)
+     render_template('errors/404.html', headers)
 
+def _500(headers=None):
+     if headers is None:
+          headers = {}
+     headers['Content-Type'] = 'text/html; charset=utf-8'
+     render_template('errors/500.html', headers)
 
 def redirect(location, headers=None):
      if headers is None:

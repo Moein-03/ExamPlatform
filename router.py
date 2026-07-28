@@ -172,13 +172,14 @@ def route(path, method, data, headers):
                     exams = exam_get_all.handle(None, only_published=True, student_id=user_id)
                else:
                     return response._403()
-               
                exams_json = json.dumps(exams, ensure_ascii=False)
-               html = response.render_master("exams.html", {
+               context = {
                     'exams_json': exams_json,
                     'user_role': user_role,
                     'base_url': settings.BASE_URL
-               }, "لیست آزمون‌ها")
+               }
+               exams_json = json.dumps(exams, ensure_ascii=False)
+               html = response.render_master("exams.html", context, "لیست آزمون‌ها")
                return response.serve_html(html)
 
           case ("/exam/add", "GET"):

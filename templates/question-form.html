@@ -6,25 +6,71 @@
     <title>سوال جدید</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
-        body { direction: rtl; background: #f5f5f5; }
-        .mdl-card { max-width: 780px; margin: 0 auto; width: 100%; }
-        .mdl-card__title { background: #3f51b5; color: white; }
-        .mdl-card__supporting-text { padding: 32px 40px; }
-        .answer-row {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 8px;
+        body {
+            direction: rtl;
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background: linear-gradient(160deg, #eef2ff 0%, #f0f4f8 45%, #e8eaf6 100%);
+            min-height: 100vh;
+        }
+        .mdl-card {
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 6px 24px rgba(26, 35, 126, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.08);
+        }
+        .mdl-card__title {
+            background: linear-gradient(90deg, #1a237e 0%, #283593 55%, #3949ab 100%);
+            color: white;
+            padding: 16px 22px;
+        }
+        .mdl-card__title-text { font-size: 1.25rem; font-weight: 600; }
+        .mdl-card__supporting-text {
+            padding: 22px 24px 26px;
+            background: #fff;
+            color: #1e293b;
+        }
+        .mdl-textfield {
+            width: 100%;
             margin-bottom: 12px;
+        }
+        .mdl-textfield__input {
+            font-family: 'Vazirmatn', Tahoma, sans-serif !important;
+        }
+        .answer-row {
+            background: #f8fafc;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            border: 1px solid #e2e8f0;
         }
-        .error-message { background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+        .error-message {
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            border: 1px solid #fecaca;
+        }
         .error-message.hidden { display: none; }
+        .mdl-button {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            border-radius: 8px;
+            font-weight: 600;
+        }
         @media (max-width: 600px) {
-            .mdl-card__supporting-text { padding: 20px; }
+            .mdl-card__supporting-text { padding: 18px 16px; }
             .answer-row { flex-direction: column; align-items: stretch; }
         }
     </style>
@@ -41,7 +87,7 @@
 
                     <form id="question-form" method="POST">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="4" required></textarea>
+                            <textarea class="mdl-textfield__input" id="question_text" name="question_text" rows="3" required></textarea>
                             <label class="mdl-textfield__label">متن سوال</label>
                         </div>
 
@@ -64,8 +110,8 @@
                         </div>
 
                         <div id="answers-section">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <h4 id="answers-title" class="mdl-typography--title">گزینه‌ها</h4>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <h4 id="answers-title" style="margin:0; font-size:1.05rem;">گزینه‌ها</h4>
                                 <button type="button" id="add-btn" onclick="addOption()" 
                                         class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" style="display:none;">
                                     <i class="material-icons">add</i> گزینه جدید
@@ -74,11 +120,11 @@
                             <div id="answers-container"></div>
                         </div>
 
-                        <div style="margin-top: 40px;">
+                        <div style="margin-top: 28px;">
                             <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="submit-btn">
                                 ذخیره سوال
                             </button>
-                            <a href="{{ base_url }}/questions" class="mdl-button mdl-js-button mdl-button--raised" style="margin-right: 16px;">
+                            <a href="{{ base_url }}/questions" class="mdl-button mdl-js-button mdl-button--raised" style="margin-right: 10px;">
                                 انصراف
                             </a>
                         </div>
@@ -123,7 +169,7 @@
                     answers = JSON.parse(answersDataStr);
                 }
             } catch(e) {
-                console.error('خطا در解析 داده‌ها', e);
+                console.error('خطا در پارس داده‌ها', e);
             }
 
             var isEdit = (mode === 'edit' && question);
@@ -184,7 +230,7 @@
                 var container = document.getElementById('answers-container');
                 if (!container) return;
                 if (tempAnswers.length === 0) {
-                    container.innerHTML = '<p style="color:#999;">هیچ گزینه‌ای تعریف نشده است.</p>';
+                    container.innerHTML = '<p style="color:#64748b;font-size:0.9rem;">هیچ گزینه‌ای تعریف نشده است.</p>';
                     return;
                 }
                 var html = '';
@@ -201,7 +247,7 @@
                     html += '<span class="mdl-radio__label">صحیح</span>';
                     html += '</label>';
                     if (tempAnswers.length > 2 || (document.getElementById('question_type').value === 'true_false' && tempAnswers.length > 2)) {
-                        html += '<button onclick="removeAnswer(' + i + ')" class="mdl-button mdl-js-button mdl-button--icon" style="color:#f44336;">';
+                        html += '<button onclick="removeAnswer(' + i + ')" class="mdl-button mdl-js-button mdl-button--icon" style="color:#dc2626;">';
                         html += '<i class="material-icons">delete</i></button>';
                     }
                     html += '</div>';
@@ -289,7 +335,6 @@
             window.removeAnswer = removeAnswer;
             window.setCorrect = setCorrect;
             window.tempAnswers = tempAnswers;
-
         })();
     </script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>

@@ -1,19 +1,90 @@
-<div style="text-align:center; padding:60px;">
-     <i class="material-icons" style="font-size:80px; color:#f44336;">block</i>
-     <h2>۴۰۳ - دسترسی ممنوع</h2>
-     <a href="#" data-link="{{ base_url }}/dashboard" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">داشبورد</a>
-</div>
-
-<script>
-     (function() {
-          var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
-          var links = document.querySelectorAll('[data-link]');
-          for (var i = 0; i < links.length; i++) {
-               var link = links[i];
-               var path = link.getAttribute('data-link');
-               if (path) {
-                    link.href = base_url + path;
-               }
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>۴۰۳ - دسترسی ممنوع</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+     <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body {
+               font-family: 'Vazirmatn', Tahoma, sans-serif;
+               background: linear-gradient(160deg, #eef2ff 0%, #f0f4f8 45%, #e8eaf6 100%);
+               min-height: 100vh;
+               direction: rtl;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               padding: 20px;
           }
-     })();
-</script>
+          .error-card {
+               background: #ffffff;
+               border-radius: 18px;
+               box-shadow: 0 10px 40px rgba(26, 35, 126, 0.12);
+               border: 1px solid rgba(99, 102, 241, 0.1);
+               padding: 48px 40px;
+               text-align: center;
+               max-width: 440px;
+               width: 100%;
+          }
+          .error-card .material-icons {
+               font-size: 80px;
+               color: #dc2626;
+               margin-bottom: 20px;
+          }
+          .error-card h1 {
+               font-size: 1.8rem;
+               font-weight: 700;
+               color: #1e293b;
+               margin-bottom: 12px;
+          }
+          .error-card p {
+               color: #64748b;
+               font-size: 1.05rem;
+               line-height: 1.6;
+               margin-bottom: 32px;
+          }
+          .mdl-button {
+               font-family: 'Vazirmatn', Tahoma, sans-serif;
+               border-radius: 10px;
+               font-weight: 600;
+               height: 48px;
+               padding: 0 28px;
+               background: linear-gradient(90deg, #1a237e, #3949ab) !important;
+          }
+          @media (max-width: 480px) {
+               .error-card { padding: 36px 24px; }
+               .error-card h1 { font-size: 1.5rem; }
+          }
+     </style>
+</head>
+<body>
+     <div class="error-card">
+          <i class="material-icons">block</i>
+          <p style="font-size: x-large;">۴۰۳ - دسترسی ممنوع</p>
+          <p>شما اجازه دسترسی به این صفحه را ندارید.</p>
+          <a href="#" data-link="{{ base_url }}/dashboard" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+               بازگشت به داشبورد
+          </a>
+     </div>
+
+     <script>
+          (function() {
+               var base_url = window.__DATA__ && window.__DATA__.base_url ? window.__DATA__.base_url : '';
+               var links = document.querySelectorAll('[data-link]');
+               for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    var path = link.getAttribute('data-link');
+                    if (path) {
+                         link.href = base_url + path;
+                    }
+               }
+          })();
+     </script>
+     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.min.js"></script>
+</body>
+</html>

@@ -6,42 +6,103 @@
      <title>لیست آزمون‌ها</title>
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css">
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
      <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          html, body { width: 100%; max-width: 100%; overflow-x: hidden; direction: rtl; text-align: right; font-family: 'Roboto', Tahoma, sans-serif; background: #f5f5f5; }
-          .mdl-grid { max-width: 100%; padding: 0; margin: 0 auto; }
-          .mdl-cell { padding: 0; }
-          .mdl-card { width: 100%; max-width: 100%; margin: 0; box-sizing: border-box; }
-          .mdl-card__supporting-text { padding: 16px; width: 100%; max-width: 100%; box-sizing: border-box; }
-          .table-container { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          table { width: 100%; min-width: 650px; table-layout: fixed; border-collapse: collapse; }
-          th:nth-child(1), td:nth-child(1) { width: 20%; }
-          th:nth-child(2), td:nth-child(2) { width: 15%; }
-          th:nth-child(3), td:nth-child(3) { width: 20%; }
-          th:nth-child(4), td:nth-child(4) { width: 12%; }
-          th:nth-child(5), td:nth-child(5) { width: 16%; }
-          th:nth-child(6), td:nth-child(6) { width: 17%; }
-          th, td { padding: 8px 8px; text-align: right; border-bottom: 1px solid #e0e0e0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-          th:last-child { text-align: center !important; }
-          td:last-child { overflow: visible; white-space: nowrap; text-align: center; }
-          th:nth-child(5), td:nth-child(5) { text-align: center; }
-          th { background: #f5f5f5; font-weight: bold; }
-          .btn-icon { color: #3f51b5; }
-          .btn-delete { color: #f44336; }
-          .btn-take { color: #4caf50; }
-          .btn-disabled { color: #bdbdbd; pointer-events: none; cursor: default; }
-          .btn-view { color: #2196f3; }
-
-          .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 500; display: inline-block; }
-          .status-draft { background: #fff3e0; color: #e65100; }
-          .status-active { background: #e8f5e9; color: #2e7d32; }
-          .status-ongoing { background: #fff9c4; color: #f57f17; }
-          .status-ended { background: #fce4ec; color: #c62828; }
-          .status-unknown { background: #e0e0e0; color: #616161; }
-
-          .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
-          @media (max-width: 768px) { body { padding: 10px; } .mdl-card__supporting-text { padding: 8px; } table { min-width: 550px; } th, td { padding: 6px 4px; font-size: 0.9em; } }
-          @media (max-width: 480px) { table { min-width: 450px; } th, td { font-size: 0.8em; padding: 4px 3px; } .mdl-button { font-size: 0.8em; padding: 0 12px; min-width: 30px; } }
+          html, body {
+               width: 100%; max-width: 100%;
+               direction: rtl; text-align: right;
+               font-family: 'Vazirmatn', Tahoma, sans-serif;
+               background: linear-gradient(160deg, #eef2ff 0%, #f0f4f8 45%, #e8eaf6 100%);
+               min-height: 100vh;
+          }
+          .mdl-grid { max-width: 1200px; padding: 28px 16px; margin: 0 auto; }
+          .mdl-card {
+               width: 100%;
+               border-radius: 18px;
+               overflow: hidden;
+               box-shadow: 0 8px 30px rgba(26, 35, 126, 0.09);
+               border: 1px solid rgba(99, 102, 241, 0.08);
+               background: #ffffff;
+          }
+          .mdl-card__title {
+               background: linear-gradient(90deg, #1a237e 0%, #283593 55%, #3949ab 100%);
+               color: #fff;
+               padding: 22px 28px;
+          }
+          .mdl-card__title-text { font-size: 1.45rem; font-weight: 600; }
+          .mdl-card__supporting-text {
+               padding: 28px;
+               width: 100%;
+               box-sizing: border-box;
+          }
+          .mdl-button {
+               font-family: 'Vazirmatn', Tahoma, sans-serif;
+               border-radius: 8px;
+               font-weight: 600;
+               font-size: 0.95rem;
+               height: 42px;
+               padding: 0 18px;
+          }
+          .header-actions {
+               display: flex;
+               gap: 12px;
+               flex-wrap: wrap;
+               align-items: center;
+               margin-bottom: 22px;
+          }
+          .table-container {
+               width: 100%;
+               overflow-x: auto;
+               -webkit-overflow-scrolling: touch;
+               border-radius: 12px;
+               border: 1px solid #e2e8f0;
+          }
+          table {
+               width: 100%;
+               min-width: 700px;
+               border-collapse: collapse;
+               background: #fff;
+          }
+          th, td {
+               padding: 14px 16px;
+               text-align: right;
+               border-bottom: 1px solid #e2e8f0;
+          }
+          th {
+               background: #f1f5f9;
+               font-weight: 600;
+               color: #334155;
+               font-size: 0.92rem;
+          }
+          td { color: #1e293b; font-size: 0.95rem; }
+          tr:hover td { background: #f8fafc; }
+          .status-badge {
+               padding: 5px 14px;
+               border-radius: 20px;
+               font-size: 0.82rem;
+               font-weight: 500;
+               display: inline-block;
+          }
+          .status-draft { background: #fff7ed; color: #c2410c; }
+          .status-active { background: #ecfdf5; color: #047857; }
+          .status-ongoing { background: #fefce8; color: #a16207; }
+          .status-ended { background: #fef2f2; color: #b91c1c; }
+          .status-unknown { background: #f1f5f9; color: #475569; }
+          .btn-icon { color: #3949ab; }
+          .btn-delete { color: #dc2626; }
+          .btn-take { color: #059669; }
+          .btn-disabled { color: #94a3b8; pointer-events: none; cursor: default; }
+          .btn-view { color: #2563eb; }
+          .mdl-button--icon { min-width: 40px; }
+          @media (max-width: 768px) {
+               .mdl-grid { padding: 18px 12px; }
+               .mdl-card__supporting-text { padding: 18px; }
+               table { min-width: 600px; }
+               th, td { padding: 10px 12px; font-size: 0.88rem; }
+          }
      </style>
 </head>
 <body>
@@ -49,7 +110,7 @@
           <div class="mdl-cell mdl-cell--12-col">
                <div class="mdl-card mdl-shadow--2dp">
                     <div class="mdl-card__title">
-                         <h2 class="mdl-card__title-text">لیست آزمون‌ها</h2>
+                         <p class="mdl-card__title-text" style="font-size: larger;">لیست آزمون‌ها</p>
                     </div>
                     <div class="mdl-card__supporting-text">
                          <div class="header-actions" id="header-actions"></div>
@@ -95,7 +156,7 @@
                var tbody = document.getElementById('exams-tbody');
                if (!tbody) return;
                if (exams.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#999;">هیچ آزمونی یافت نشد</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">هیچ آزمونی یافت نشد</td></tr>';
                     return;
                }
                var html = '';
@@ -111,8 +172,8 @@
                     html += '<td title="' + teacherName + '">' + teacherName + '</td>';
                     html += '<td>' + startTime + '</td>';
                     html += '<td>' + (e.duration || 0) + '</td>';
-                    html += '<td><span class="status-badge ' + statusClass + '">' + statusText + '</span></td>';
-                    html += '<td>';
+                    html += '<td><span class="status-badge ' + statusClass + '" style="text-align:center;">' + statusText + '</span></td>';
+                    html += '<td style="white-space:nowrap;">';
                     if (userRole === 'admin' || userRole === 'teacher') {
                          html += '<a href="' + baseUrl + '/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon" title="مشاهده"><i class="material-icons">visibility</i></a>';
                          html += '<a href="' + baseUrl + '/exam/edit/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-icon" title="ویرایش"><i class="material-icons">edit</i></a>';
@@ -121,11 +182,11 @@
                          html += '<button type="submit" class="mdl-button mdl-js-button mdl-button--icon btn-delete" title="حذف"><i class="material-icons">delete</i></button>';
                          html += '</form>';
                     } else if (userRole === 'student') {
-                              html += '<a href="' + baseUrl + '/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-view" title="مشاهده"><i class="material-icons">visibility</i></a>';
+                         html += '<a href="' + baseUrl + '/exam/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-view" title="مشاهده"><i class="material-icons">visibility</i></a>';
                          if (e.exam_status === 'در حال برگزاری') {
-                              html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
+                         html += '<a href="' + baseUrl + '/exam/take/' + e.id + '" class="mdl-button mdl-js-button mdl-button--icon btn-take" title="شرکت در آزمون"><i class="material-icons">play_arrow</i></a>';
                          } else {
-                              html += '<span class="mdl-button mdl-js-button mdl-button--icon btn-disabled" title="غیرفعال"><i class="material-icons">play_arrow</i></span>';
+                         html += '<span class="mdl-button mdl-js-button mdl-button--icon btn-disabled" title="غیرفعال"><i class="material-icons">play_arrow</i></span>';
                          }
                     }
                     html += '</td>';
