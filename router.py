@@ -15,7 +15,7 @@ def route(path, method, data, headers):
      print(f"[DEBUG] path: '{path}', method: '{method}'")
 
      session_id = cookie.get_cookie(headers, "session_id")
-     current_user = auth.get_current_user(session_id)
+     current_user = auth.get_user(session_id)
      user_id = current_user['id'] if current_user else None
      user_role = auth.get_user_role(user_id) if user_id else None
 

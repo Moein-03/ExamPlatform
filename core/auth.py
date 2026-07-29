@@ -13,7 +13,7 @@ def create_session(user_id, max_age=604800):
     _session_expiry[session_id] = time.time() + max_age
     return session_id
 
-def get_current_user(session_id):
+def get_user(session_id):
     if not session_id or session_id not in _sessions:
         return None
     if _session_expiry.get(session_id, 0) < time.time():
