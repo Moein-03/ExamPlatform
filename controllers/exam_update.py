@@ -63,7 +63,6 @@ def handle(exam_id, data, teacher_id):
           cursor.execute("DELETE FROM TBL_exam_questions WHERE exam_id = ?", (exam_id,))
           cursor.execute("DELETE FROM TBL_exam_users WHERE exam_id = ?", (exam_id,))
 
-          #if not is_random:
           for idx, qid in enumerate(question_ids):
                if qid.isdigit():
                     query = '''

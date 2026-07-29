@@ -222,8 +222,12 @@ def route(path, method, data, headers):
                          return response._403()
                     if user_id not in exam.get('student_ids', []):
                          return response._403()
-               elif user_role not in ['admin', 'teacher']:
+               elif user_role == 'teacher':
+                    if exam.get('teacher_id') != user_id:
+                         return response._403()
+               elif user_role != 'admin':
                     return response._403()
+               
                exam_json = json.dumps(exam, ensure_ascii=False)
                context = {
                     'exam_json': exam_json,
@@ -424,6 +428,13 @@ def route(path, method, data, headers):
                question = question_get_one.handle(item_id)
                if not question:
                     return response._404()
+               if user_role == 'teacher':
+                    exam_id = question.get('exam_id')
+                    if exam_id is None:
+                         return response._403()
+                    exam = exam_get_one.handle(exam_id, user_id)
+                    if not exam:
+                         return response._403()
                answers = answer_get_by_question.handle(item_id)
                question_json = json.dumps(question, ensure_ascii=False)
                answers_json = json.dumps(answers, ensure_ascii=False)
@@ -441,6 +452,16 @@ def route(path, method, data, headers):
           case ("/question/edit", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
+               question = question_get_one.handle(item_id)
+               if not question:
+                    return response._404()
+               if user_role == 'teacher':
+                    exam_id = question.get('exam_id')
+                    if exam_id is None:
+                         return response._403()
+                    exam = exam_get_one.handle(exam_id, user_id)
+                    if not exam:
+                         return response._403()
                
                answers_json = data.get('answers', [''])[0]
                answers = []
@@ -459,45 +480,56 @@ def route(path, method, data, headers):
                     answers = answer_get_by_question.handle(item_id)
                     question_json = json.dumps(question, ensure_ascii=False)
                     answers_json = json.dumps(answers, ensure_ascii=False)
-                    question_id_json = json.dumps(question['id'])
                     context = {
                          'question_json': question_json,
                          'answers_json': answers_json,
-                         'question_id_json': question_id_json,
+                         'question_id': question['id'],
                          'base_url': settings.BASE_URL,
                          'error': result
                     }
-                    html = response.render_master("question-edit.html", context, "ویرایش سوال")
+                    html = response.render_master("question-form.html", context, "ویرایش سوال")
                     return response.serve_html(html)
 
           case ("/question/delete", "POST") if item_id is not None:
                if not user_id or user_role not in ['admin', 'teacher']:
                     return response._403()
+               question = question_get_one.handle(item_id)
+               if not question:
+                    return response._404()
+
+               if user_role == 'teacher':
+                    exam_id = question.get('exam_id')
+                    if exam_id is None:
+                         return response._403()
+                    exam = exam_get_one.handle(exam_id, user_id)
+                    if not exam:
+                         return response._403()
+               
                result = question_delete.handle(item_id, user_id)
                if "موفقیت" in result or "حذف" in result:
                     return response.redirect("/questions")
                return response._200(result)
 
-          case ("/question/import", "GET"):
-               if not user_id or user_role not in ['admin', 'teacher']:
-                    return response._403()
-               html = response.render_master("question-import.html", {
-                    'base_url': settings.BASE_URL
-               }, "بارگذاری سوالات")
-               return response.serve_html(html)
+          #case ("/question/import", "GET"):
+          #     if not user_id or user_role not in ['admin', 'teacher']:
+          #          return response._403()
+          #     html = response.render_master("question-import.html", {
+          #          'base_url': settings.BASE_URL
+          #     }, "بارگذاری سوالات")
+          #     return response.serve_html(html)
 
-          case ("/question/import", "POST"):
-               if not user_id or user_role not in ['admin', 'teacher']:
-                    return response._403()
-               result = question_import.handle(data, user_id)
-               if "موفقیت" in result:
-                    return response.redirect("/questions")
-               return response._200(result)
+          #case ("/question/import", "POST"):
+          #     if not user_id or user_role not in ['admin', 'teacher']:
+          #          return response._403()
+          #     result = question_import.handle(data, user_id)
+          #     if "موفقیت" in result:
+          #          return response.redirect("/questions")
+          #     return response._200(result)
 
-          case ("/question/export", "GET"):
-               if not user_id or user_role not in ['admin', 'teacher']:
-                    return response._403()
-               return question_export.handle(user_id)
+          #case ("/question/export", "GET"):
+          #     if not user_id or user_role not in ['admin', 'teacher']:
+          #          return response._403()
+          #     return question_export.handle(user_id)
 
           # ---------- مدیریت گزینه‌ها  ----------
           case ("/answer/add", "POST") if item_id is not None:
